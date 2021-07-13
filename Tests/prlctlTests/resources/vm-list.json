@@ -1,0 +1,26 @@
+[
+    {
+        "uuid": "8D66F605-E28D-412B-B3C9-028C316072C9",
+        "status": "running",
+        "ip_configured": "10.211.55.66",
+        "name": "running-vm-with-ip"
+    },
+    {
+        "uuid": "62A86E87-B620-4E1C-95F9-8601EB51A881",
+        "status": "running",
+        "ip_configured": "0:0:0:0:0:FFFF:0AD3:3742.",
+        "name": "running-vm-with-ipv6"
+    },
+    {
+        "uuid": "0C7954C9-7CA4-4E5A-A84D-5927F4D2D710",
+        "status": "running",
+        "ip_configured": "-",
+        "name": "running-vm-without-ip"
+    },
+    {
+        "uuid": "83193991-61FE-4FF7-93A9-6B51D9531F67",
+        "status": "stopped",
+        "ip_configured": "-",
+        "name": "stopped-vm"
+    }
+]

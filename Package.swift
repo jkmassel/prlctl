@@ -14,15 +14,32 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
+        .package(
+            url: "https://github.com/JohnSundell/ShellOut",
+            from: "2.3.0"
+        ),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "prlctl",
-            dependencies: []),
+            dependencies: [
+                .product(
+                    name: "ShellOut",
+                    package: "ShellOut"
+                )
+            ]),
         .testTarget(
             name: "prlctlTests",
-            dependencies: ["prlctl"]),
+            dependencies: ["prlctl"],
+            resources: [
+                .copy("resources/running-vm-with-ip.json"),
+                .copy("resources/running-vm-with-ipv6.json"),
+                .copy("resources/running-vm-without-ip.json"),
+                .copy("resources/stopped-vm.json"),
+                .copy("resources/vm-list.json"),
+            ]
+        )
     ]
 )
