@@ -100,6 +100,10 @@ public struct StoppedVM: VMProtocol {
     public func clone(as newName: String) throws {
         try runner.runCommand(components: ["prlctl", "clone", uuid, "--name", newName])
     }
+
+    public func delete() throws {
+        try runner.runCommand(components: ["prlctl", "delete", uuid])
+    }
 }
 
 public struct RunningVM: VMProtocol {

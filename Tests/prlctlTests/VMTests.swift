@@ -43,6 +43,12 @@ final class VMTests: XCTestCase {
         XCTAssertEqual(runner.command, "prlctl clone machine-uuid --name new-machine")
     }
 
+    func testThatStoppedVMCanBeDeleted() throws {
+        let runner = TestCommandRunner()
+        try StoppedVM(uuid: "machine-uuid", name: "machine-name", runner: runner).delete()
+        XCTAssertEqual(runner.command, "prlctl delete machine-uuid")
+    }
+
     func testThatRunningVMCanBeStopped() throws {
         let runner = TestCommandRunner()
         try RunningVM(uuid: "machine-uuid", name: "machine-name", ipAddress: "127.0.0.1", runner: runner).shutdown()
