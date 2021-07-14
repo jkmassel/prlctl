@@ -3,6 +3,7 @@ import Foundation
 public enum VMStatus: String, Codable {
     case running
     case stopped
+    case packaged
 }
 
 public protocol VMProtocol {
@@ -10,11 +11,32 @@ public protocol VMProtocol {
     var name: String { get }
 }
 
-public struct VM: VMProtocol, Codable {
+public struct CodableVM: VMProtocol, Codable {
+    public let uuid: String
+    public let name: String
+    public let status: VMStatus
+    let ip_configured: String
+}
+
+public struct VM: VMProtocol {
     public let uuid: String
     public let name: String
     let status: VMStatus
     let ip_configured: String
+
+    init(vm: CodableVM) {
+        self.uuid = vm.uuid
+        self.name = vm.name
+        self.status = vm.status
+        self.ip_configured = vm.ip_configured
+    }
+
+    init(vm: CodableVM, details: VMDetails) {
+        self.uuid = vm.uuid
+        self.name = vm.name
+        self.ip_configured = vm.ip_configured
+        self.status = details.isPackage ? .packaged : .stopped
+    }
 
     var asRunningVM: RunningVM? {
         guard status == .running else {
@@ -30,6 +52,32 @@ public struct VM: VMProtocol, Codable {
         }
 
         return StoppedVM(uuid: uuid, name: name)
+    }
+
+    var asPackagedVM: PackagedVM? {
+        guard status == .packaged else {
+            return nil
+        }
+
+        return PackagedVM(uuid: uuid, name: name)
+    }
+}
+
+public struct PackagedVM: VMProtocol {
+    public let uuid: String
+    public let name: String
+
+    private let runner: ParallelsCommandRunner
+
+    init(uuid: String, name: String, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) {
+        self.uuid = uuid
+        self.name = name
+        self.runner = runner
+    }
+
+    func unpack() throws -> StoppedVM {
+        try runner.runCommand(components: ["prlctl", "unpack", uuid])
+        return StoppedVM(uuid: uuid, name: name, runner: runner)
     }
 }
 
@@ -55,6 +103,7 @@ public struct StoppedVM: VMProtocol {
 }
 
 public struct RunningVM: VMProtocol {
+
     public let uuid: String
     public let name: String
     public let ipAddress: String
@@ -91,6 +140,38 @@ extension RunningVM {
                 .replacingOccurrences(of: "$USERNAME", with: user.name)
                 .replacingOccurrences(of: "$COMMAND", with: command)
             return try runner.runCommand(components: ["prlctl", "exec", self.uuid, command])
+        }
+    }
+}
+
+public struct VMDetails: Codable {
+    let uuid: String
+    let name: String
+    let description: String
+    let state: VMStatus
+    private let path: String
+    private let optimization: VMOptimizationDetails
+
+    var isPackage: Bool {
+        path.hasSuffix(".pvmp")
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case uuid = "ID"
+        case name = "Name"
+        case description = "Description"
+        case state = "State"
+        case path = "Home"
+        case optimization = "Optimization"
+    }
+
+    public struct VMOptimizationDetails: Codable {
+        private let fasterVirtualMachine: String
+        let hypervisorType: String
+
+        enum CodingKeys: String, CodingKey {
+            case fasterVirtualMachine = "Faster virtual machine"
+            case hypervisorType = "Hypervisor type"
         }
     }
 }

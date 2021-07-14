@@ -6,25 +6,29 @@ final class VMTests: XCTestCase {
 
     func testThatRunningVMWithIPAddressCanBeParsed() throws {
         let json = getJSONDataForResource(named: "running-vm-with-ip")
-        let vm = try XCTUnwrap(JSONDecoder().decode(VM.self, from: json).asRunningVM)
+        let codableVM = try XCTUnwrap(JSONDecoder().decode(CodableVM.self, from: json))
+        let vm = try XCTUnwrap(VM(vm: codableVM).asRunningVM)
         XCTAssertEqual(vm.hasIpAddress, true)
     }
 
     func testThatRunningVMWithIPv6AddressCanBeParsed() throws {
         let json = getJSONDataForResource(named: "running-vm-with-ipv6")
-        let vm = try XCTUnwrap(JSONDecoder().decode(VM.self, from: json).asRunningVM)
+        let codableVM = try XCTUnwrap(JSONDecoder().decode(CodableVM.self, from: json))
+        let vm = try XCTUnwrap(VM(vm: codableVM).asRunningVM)
         XCTAssertEqual(vm.hasIpAddress, true)
     }
 
     func testThatRunningVMWithoutIPAddressCanBeParsed() throws {
         let json = getJSONDataForResource(named: "running-vm-without-ip")
-        let vm = try XCTUnwrap(JSONDecoder().decode(VM.self, from: json).asRunningVM)
+        let codableVM = try XCTUnwrap(JSONDecoder().decode(CodableVM.self, from: json))
+        let vm = try XCTUnwrap(VM(vm: codableVM).asRunningVM)
         XCTAssertEqual(vm.hasIpAddress, false)
     }
 
     func testThatStoppedVMCanBeParsed() throws {
         let json = getJSONDataForResource(named: "stopped-vm")
-        try XCTAssertNotNil(JSONDecoder().decode(VM.self, from: json).asStoppedVM)
+        let codableVM = try XCTUnwrap(JSONDecoder().decode(CodableVM.self, from: json))
+        XCTAssertNotNil(try XCTUnwrap(VM(vm: codableVM).asStoppedVM))
     }
 
     func testThatStoppedVMCanBeStarted() throws {
@@ -61,5 +65,12 @@ final class VMTests: XCTestCase {
         let runner = TestCommandRunner()
         try RunningVM(uuid: "machine-uuid", name: "machine-name", ipAddress: "127.0.0.1", runner: runner).runCommand("ls", as: User(named: "user"))
         XCTAssertEqual(runner.command, "prlctl exec machine-uuid su - user -c 'ls'")
+    }
+
+    func testThatVMDetailsCanBeParsed() throws {
+        let json = getJSONDataForResource(named: "vm-details")
+        let vm = try XCTUnwrap(JSONDecoder().decode(VMDetails.self, from: json))
+
+        XCTAssertEqual(vm.uuid, "bd70007c-83b8-4642-b1d0-fa8ddfa0a4cf")
     }
 }
