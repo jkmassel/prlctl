@@ -33,11 +33,11 @@ public struct Parallels {
     }
 
     public func lookupRunningVMs() throws -> [RunningVM] {
-        try lookupAllVMs().compactMap { $0.asRunningVM }
+        try lookupAllVMs().compactMap { $0.asRunningVM() }
     }
 
     public func lookupStoppedVMs() throws -> [StoppedVM] {
-        try lookupAllVMs().compactMap { $0.asStoppedVM }
+        try lookupAllVMs().compactMap { $0.asStoppedVM() }
     }
 
     public func lookupVM(named handle: String) throws -> VMProtocol? {
@@ -45,7 +45,7 @@ public struct Parallels {
             return nil
         }
 
-        return vm.asRunningVM ?? vm.asStoppedVM
+        return vm.asRunningVM() ?? vm.asStoppedVM()
     }
 
     func lookupAllVMDetails(runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws -> [VMDetails] {

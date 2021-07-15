@@ -45,24 +45,36 @@ public struct VM: VMProtocol {
         self.ip_configured = vm.ip_configured
     }
 
-    var asRunningVM: RunningVM? {
-        guard status == .running else {
+    public var isRunningVM: Bool {
+        status == .running
+    }
+
+    public func asRunningVM() -> RunningVM? {
+        guard isRunningVM else {
             return nil
         }
 
         return RunningVM(uuid: uuid, name: name, ipAddress: ip_configured)
     }
 
-    var asStoppedVM: StoppedVM? {
-        guard status == .stopped else {
+    public var isStoppedVM: Bool {
+        status == .stopped
+    }
+
+    public func asStoppedVM() -> StoppedVM? {
+        guard isStoppedVM else {
             return nil
         }
 
         return StoppedVM(uuid: uuid, name: name)
     }
 
-    var asPackagedVM: PackagedVM? {
-        guard status == .packaged else {
+    public var isPackagedVM: Bool {
+        status == .packaged
+    }
+
+    public func asPackagedVM() -> PackagedVM? {
+        guard isPackagedVM else {
             return nil
         }
 
