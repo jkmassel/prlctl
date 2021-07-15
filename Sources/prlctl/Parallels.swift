@@ -15,7 +15,7 @@ public struct Parallels {
 
     let serviceControl: ParallelsService
 
-    private func lookupVMs() throws -> [VM] {
+    public func lookupAllVMs() throws -> [VM] {
         guard let output = try runner.runCommand(components: ["prlctl", "list", "--json", "--full", "--all"]).data(using: .utf8) else {
             return []
         }
@@ -33,15 +33,15 @@ public struct Parallels {
     }
 
     public func lookupRunningVMs() throws -> [RunningVM] {
-        try lookupVMs().compactMap { $0.asRunningVM }
+        try lookupAllVMs().compactMap { $0.asRunningVM }
     }
 
     public func lookupStoppedVMs() throws -> [StoppedVM] {
-        try lookupVMs().compactMap { $0.asStoppedVM }
+        try lookupAllVMs().compactMap { $0.asStoppedVM }
     }
 
     public func lookupVM(named handle: String) throws -> VMProtocol? {
-        guard let vm = try lookupVMs().filter({ $0.uuid == handle || $0.name == handle }).first else {
+        guard let vm = try lookupAllVMs().filter({ $0.uuid == handle || $0.name == handle }).first else {
             return nil
         }
 
@@ -56,10 +56,9 @@ public struct Parallels {
         return try JSONDecoder().decode([VMDetails].self, from: json)
     }
 
-
     public func importVM(at url: URL) throws -> VM? {
         // Register the image with Parallels
         try runner.runCommand(components: ["prlctl", "register", url.path])
-        return try lookupVMs().last
+        return try lookupAllVMs().last
     }
 }
