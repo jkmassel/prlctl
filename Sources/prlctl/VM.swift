@@ -38,6 +38,13 @@ public struct VM: VMProtocol {
         self.status = details.isPackage ? .packaged : vm.status
     }
 
+    public init(from vm: VM) {
+        self.uuid = vm.uuid
+        self.name = vm.name
+        self.status = vm.status
+        self.ip_configured = vm.ip_configured
+    }
+
     var asRunningVM: RunningVM? {
         guard status == .running else {
             return nil
