@@ -39,14 +39,14 @@ final class ParallelsTests: XCTestCase {
         let data = getJSONResource(named: "vm-list")
         let parallels = Parallels(runner: TestCommandRunner(response: data))
         let vm = try parallels.lookupVM(named: "stopped-vm")
-        XCTAssert(vm is StoppedVM)
+        XCTAssertNotNil(vm?.asStoppedVM())
     }
 
     func testThatLookupVMReturnsStartedVM() throws {
         let data = getJSONResource(named: "vm-list")
         let parallels = Parallels(runner: TestCommandRunner(response: data))
         let vm = try parallels.lookupVM(named: "running-vm-with-ip")
-        XCTAssert(vm is RunningVM)
+        XCTAssertNotNil(vm?.asRunningVM())
     }
 
     func testThatLookupVMReturnsNilForInvalidHandle() throws {

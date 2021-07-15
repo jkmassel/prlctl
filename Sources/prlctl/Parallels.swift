@@ -40,12 +40,12 @@ public struct Parallels {
         try lookupAllVMs().compactMap { $0.asStoppedVM() }
     }
 
-    public func lookupVM(named handle: String) throws -> VMProtocol? {
+    public func lookupVM(named handle: String) throws -> VM? {
         guard let vm = try lookupAllVMs().filter({ $0.uuid == handle || $0.name == handle }).first else {
             return nil
         }
 
-        return vm.asRunningVM() ?? vm.asStoppedVM()
+        return vm
     }
 
     func lookupAllVMDetails(runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws -> [VMDetails] {
