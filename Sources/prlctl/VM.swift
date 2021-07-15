@@ -88,6 +88,13 @@ public struct PackagedVM: VMProtocol {
 
     private let runner: ParallelsCommandRunner
 
+    public init(vm: PackagedVM) {
+        self.uuid = vm.uuid
+        self.name = vm.name
+
+        self.runner = vm.runner
+    }
+
     init(uuid: String, name: String, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) {
         self.uuid = uuid
         self.name = name
@@ -105,6 +112,12 @@ public struct StoppedVM: VMProtocol {
     public let name: String
 
     private let runner: ParallelsCommandRunner
+
+    public init(vm: StoppedVM) {
+        self.uuid = vm.uuid
+        self.name = vm.name
+        self.runner = vm.runner
+    }
 
     init(uuid: String, name: String, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) {
         self.uuid = uuid
@@ -167,6 +180,14 @@ public struct RunningVM: VMProtocol {
     public let ipAddress: String
 
     private let runner: ParallelsCommandRunner
+
+    public init(vm: RunningVM) {
+        self.uuid = vm.uuid
+        self.name = vm.name
+        self.ipAddress = vm.ipAddress
+
+        self.runner = vm.runner
+    }
 
     init(uuid: String, name: String, ipAddress: String, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) {
         self.uuid = uuid
