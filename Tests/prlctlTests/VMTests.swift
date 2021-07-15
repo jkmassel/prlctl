@@ -40,13 +40,13 @@ final class VMTests: XCTestCase {
     func testThatStoppedVMCanBeCloned() throws {
         let runner = TestCommandRunner()
         try StoppedVM(uuid: "machine-uuid", name: "machine-name", runner: runner).clone(as: "new-machine")
-        XCTAssertEqual(runner.command, "prlctl clone machine-uuid --name new-machine")
+        XCTAssertEqual(runner.command, "prlctl clone machine-uuid --name new-machine --linked")
     }
 
-    func testThatStoppedVMCanBeFastCloned() throws {
+    func testThatStoppedVMCanBeDeepCloned() throws {
         let runner = TestCommandRunner()
-        try StoppedVM(uuid: "machine-uuid", name: "machine-name", runner: runner).clone(as: "new-machine", fast: true)
-        XCTAssertEqual(runner.command, "prlctl clone machine-uuid --name new-machine --linked")
+        try StoppedVM(uuid: "machine-uuid", name: "machine-name", runner: runner).clone(as: "new-machine", fast: false)
+        XCTAssertEqual(runner.command, "prlctl clone machine-uuid --name new-machine")
     }
 
     func testThatStoppedVMCanBeDeleted() throws {
@@ -98,5 +98,31 @@ final class VMTests: XCTestCase {
         let vmDetails = try XCTUnwrap(JSONDecoder().decode(VMDetails.self, from: getJSONDataForResource(named: "running-vm-details")))
         let vm = try XCTUnwrap(VM(vm: codableVM, details: vmDetails))
         XCTAssertEqual(VMStatus.running, vm.status)
+    }
+
+    func testThatSnapshotListCanBeParsed() throws {
+        let vmList = try XCTUnwrap((JSONDecoder().decode(CodableVMSnapshotList.self, from: getJSONDataForResource(named: "vm-snapshot-list"))))
+        XCTAssertEqual(vmList.count, 1)
+    }
+
+    func testThatSnapshotListWorks() throws {
+        let runner = TestCommandRunner(response: getJSONResource(named: "vm-snapshot-list"))
+        let vmList = try StoppedVM(uuid: "machine-uuid", name: "machine-name", runner: runner).getSnapshots()
+        XCTAssertEqual(vmList.count, 1)
+        XCTAssertEqual(vmList.first?.uuid, "{64d481bb-ce04-45b1-8328-49e4e4c43ddf}")
+        XCTAssertEqual(vmList.first?.name, "Snapshot for linked clone")
+    }
+
+    func testThatDeleteSnapshotWorks() throws {
+        let runner = TestCommandRunner()
+        let snapshot = VMSnapshot(uuid: "snapshot-id", name: "snapshot-name")
+        try StoppedVM(uuid: "machine-uuid", name: "machine-name", runner: runner).deleteSnapshot(snapshot)
+        XCTAssertEqual(runner.command, "prlctl snapshot-delete machine-uuid -i snapshot-id")
+    }
+
+    func testThatCleanWorks() throws {
+        let runner = TestCommandRunner(response: getJSONResource(named: "vm-snapshot-list"))
+        try StoppedVM(uuid: "machine-uuid", name: "machine-name", runner: runner).clean()
+        XCTAssertEqual(runner.command, "prlctl snapshot-delete machine-uuid -i {64d481bb-ce04-45b1-8328-49e4e4c43ddf}")
     }
 }

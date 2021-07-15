@@ -93,11 +93,17 @@ public struct StoppedVM: VMProtocol {
         self.runner = runner
     }
 
+    /// Start the VM
     public func start() throws {
         try runner.runCommand(components: ["prlctl", "start", uuid, "--wait"])
     }
 
-    public func clone(as newName: String, fast: Bool = false) throws {
+    /// Clone the VM
+    ///
+    /// - Parameters:
+    ///     - as: The name to use for the new VM
+    ///     - fast: Whether to use the Parallels linked clone feature to speed up VM cloning (on by default)
+    public func clone(as newName: String, fast: Bool = true) throws {
         if fast {
             try runner.runCommand(components: ["prlctl", "clone", uuid, "--name", newName, "--linked"])
         } else {
@@ -105,6 +111,31 @@ public struct StoppedVM: VMProtocol {
         }
     }
 
+    /// Clean up the VM by removing all snapshots.
+    ///
+    /// Snapshots are created by running `clone` in `fast` mode – they need to be cleaned because otherwise they can take up a lot of disk space.
+    public func clean() throws {
+        try getSnapshots().forEach {
+            try deleteSnapshot($0)
+        }
+    }
+
+    /// Retrieve a list of snapshots associated with this VM
+    public func getSnapshots() throws -> [VMSnapshot] {
+        let json = try runner.runCommand(components: ["prlctl", "snapshot-list", uuid, "--json"]).data(using: .utf8)!
+        return try JSONDecoder()
+            .decode(CodableVMSnapshotList.self, from: json)
+            .map {
+                VMSnapshot(uuid: $0.key, name: $0.value.name)
+            }
+    }
+
+    /// Delete the given snapshot object from this VM
+    public func deleteSnapshot(_ snapshot: VMSnapshot) throws {
+        try runner.runCommand(components: ["prlctl", "snapshot-delete", uuid, "-i", snapshot.uuid])
+    }
+
+    /// Delete this VM
     public func delete() throws {
         try runner.runCommand(components: ["prlctl", "delete", uuid])
     }
@@ -182,4 +213,15 @@ public struct VMDetails: Codable {
             case hypervisorType = "Hypervisor type"
         }
     }
+}
+
+typealias CodableVMSnapshotList = [String: CodableVMSnapshot]
+
+struct CodableVMSnapshot: Codable {
+    let name: String
+}
+
+public struct VMSnapshot {
+    let uuid: String
+    let name: String
 }

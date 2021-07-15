@@ -41,6 +41,7 @@ let package = Package(
                 .copy("resources/running-vm-without-ip.json"),
                 .copy("resources/stopped-vm.json"),
                 .copy("resources/vm-list.json"),
+                .copy("resources/vm-snapshot-list.json"),
             ]
         )
     ]
