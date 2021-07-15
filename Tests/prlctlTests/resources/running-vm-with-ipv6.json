@@ -1,6 +1,6 @@
 {
     "uuid": "62A86E87-B620-4E1C-95F9-8601EB51A881",
     "status": "running",
-    "ip_configured": "0:0:0:0:0:FFFF:0AD3:3742.",
+    "ip_configured": "fe80::474:17c:98d7:a0b9",
     "name": "running-vm-with-ipv6"
 }

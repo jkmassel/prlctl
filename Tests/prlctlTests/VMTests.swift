@@ -8,21 +8,27 @@ final class VMTests: XCTestCase {
         let json = getJSONDataForResource(named: "running-vm-with-ip")
         let codableVM = try XCTUnwrap(JSONDecoder().decode(CodableVM.self, from: json))
         let vm = try XCTUnwrap(VM(vm: codableVM).asRunningVM())
-        XCTAssertEqual(vm.hasIpAddress, true)
+        XCTAssertTrue(vm.hasIpAddress)
+        XCTAssertTrue(vm.hasIpV4Address)
+        XCTAssertFalse(vm.hasIpV6Address)
     }
 
     func testThatRunningVMWithIPv6AddressCanBeParsed() throws {
         let json = getJSONDataForResource(named: "running-vm-with-ipv6")
         let codableVM = try XCTUnwrap(JSONDecoder().decode(CodableVM.self, from: json))
         let vm = try XCTUnwrap(VM(vm: codableVM).asRunningVM())
-        XCTAssertEqual(vm.hasIpAddress, true)
+        XCTAssertTrue(vm.hasIpAddress)
+        XCTAssertFalse(vm.hasIpV4Address)
+        XCTAssertTrue(vm.hasIpV6Address)
     }
 
     func testThatRunningVMWithoutIPAddressCanBeParsed() throws {
         let json = getJSONDataForResource(named: "running-vm-without-ip")
         let codableVM = try XCTUnwrap(JSONDecoder().decode(CodableVM.self, from: json))
         let vm = try XCTUnwrap(VM(vm: codableVM).asRunningVM())
-        XCTAssertEqual(vm.hasIpAddress, false)
+        XCTAssertFalse(vm.hasIpAddress)
+        XCTAssertFalse(vm.hasIpV4Address)
+        XCTAssertFalse(vm.hasIpV6Address)
     }
 
     func testThatStoppedVMCanBeParsed() throws {

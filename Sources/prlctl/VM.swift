@@ -1,4 +1,5 @@
 import Foundation
+import Network
 
 public enum VMStatus: String, Codable {
     case running
@@ -198,6 +199,14 @@ public struct RunningVM: VMProtocol {
 
     public var hasIpAddress: Bool {
         return ipAddress != "-"
+    }
+
+    public var hasIpV4Address: Bool {
+        IPv4Address(ipAddress) != nil
+    }
+
+    public var hasIpV6Address: Bool {
+        IPv6Address(ipAddress) != nil
     }
 }
 
