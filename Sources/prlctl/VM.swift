@@ -97,8 +97,12 @@ public struct StoppedVM: VMProtocol {
         try runner.runCommand(components: ["prlctl", "start", uuid, "--wait"])
     }
 
-    public func clone(as newName: String) throws {
-        try runner.runCommand(components: ["prlctl", "clone", uuid, "--name", newName])
+    public func clone(as newName: String, fast: Bool = false) throws {
+        if fast {
+            try runner.runCommand(components: ["prlctl", "clone", uuid, "--name", newName, "--linked"])
+        } else {
+            try runner.runCommand(components: ["prlctl", "clone", uuid, "--name", newName])
+        }
     }
 
     public func delete() throws {

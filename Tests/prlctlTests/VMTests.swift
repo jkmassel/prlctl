@@ -43,6 +43,12 @@ final class VMTests: XCTestCase {
         XCTAssertEqual(runner.command, "prlctl clone machine-uuid --name new-machine")
     }
 
+    func testThatStoppedVMCanBeFastCloned() throws {
+        let runner = TestCommandRunner()
+        try StoppedVM(uuid: "machine-uuid", name: "machine-name", runner: runner).clone(as: "new-machine", fast: true)
+        XCTAssertEqual(runner.command, "prlctl clone machine-uuid --name new-machine --linked")
+    }
+
     func testThatStoppedVMCanBeDeleted() throws {
         let runner = TestCommandRunner()
         try StoppedVM(uuid: "machine-uuid", name: "machine-name", runner: runner).delete()
