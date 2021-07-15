@@ -35,7 +35,7 @@ public struct VM: VMProtocol {
         self.uuid = vm.uuid
         self.name = vm.name
         self.ip_configured = vm.ip_configured
-        self.status = details.isPackage ? .packaged : .stopped
+        self.status = details.isPackage ? .packaged : vm.status
     }
 
     var asRunningVM: RunningVM? {

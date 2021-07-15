@@ -74,9 +74,23 @@ final class VMTests: XCTestCase {
     }
 
     func testThatVMDetailsCanBeParsed() throws {
-        let json = getJSONDataForResource(named: "vm-details")
+        let json = getJSONDataForResource(named: "packaged-vm-details")
         let vm = try XCTUnwrap(JSONDecoder().decode(VMDetails.self, from: json))
 
         XCTAssertEqual(vm.uuid, "bd70007c-83b8-4642-b1d0-fa8ddfa0a4cf")
+    }
+
+    func testThatPackagedVMCanBeParsed() throws {
+        let codableVM = try XCTUnwrap(JSONDecoder().decode(CodableVM.self, from: getJSONDataForResource(named: "stopped-vm")))
+        let vmDetails = try XCTUnwrap(JSONDecoder().decode(VMDetails.self, from: getJSONDataForResource(named: "packaged-vm-details")))
+        let vm = try XCTUnwrap(VM(vm: codableVM, details: vmDetails))
+        XCTAssertEqual(VMStatus.packaged, vm.status)
+    }
+
+    func testThatStartedVMWithDetailsCanBeParsed() throws {
+        let codableVM = try XCTUnwrap(JSONDecoder().decode(CodableVM.self, from: getJSONDataForResource(named: "running-vm-with-ip")))
+        let vmDetails = try XCTUnwrap(JSONDecoder().decode(VMDetails.self, from: getJSONDataForResource(named: "running-vm-details")))
+        let vm = try XCTUnwrap(VM(vm: codableVM, details: vmDetails))
+        XCTAssertEqual(VMStatus.running, vm.status)
     }
 }

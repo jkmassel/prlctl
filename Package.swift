@@ -34,11 +34,12 @@ let package = Package(
             name: "prlctlTests",
             dependencies: ["prlctl"],
             resources: [
+                .copy("resources/packaged-vm-details.json"),
+                .copy("resources/running-vm-details.json"),
                 .copy("resources/running-vm-with-ip.json"),
                 .copy("resources/running-vm-with-ipv6.json"),
                 .copy("resources/running-vm-without-ip.json"),
                 .copy("resources/stopped-vm.json"),
-                .copy("resources/vm-details.json"),
                 .copy("resources/vm-list.json"),
             ]
         )
