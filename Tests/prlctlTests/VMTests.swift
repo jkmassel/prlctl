@@ -106,6 +106,12 @@ final class VMTests: XCTestCase {
         XCTAssertEqual(VMStatus.running, vm.status)
     }
 
+    func testThatInvalidVMCanBeParsed() throws {
+        let codableVM = try XCTUnwrap(JSONDecoder().decode(CodableVM.self, from: getJSONDataForResource(named: "invalid-vm")))
+        let vm = try XCTUnwrap(VM(vm: codableVM))
+        XCTAssertEqual(VMStatus.invalid, vm.status)
+    }
+
     func testThatSnapshotListCanBeParsed() throws {
         let vmList = try XCTUnwrap((JSONDecoder().decode(CodableVMSnapshotList.self, from: getJSONDataForResource(named: "vm-snapshot-list"))))
         XCTAssertEqual(vmList.count, 1)

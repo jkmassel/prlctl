@@ -37,6 +37,7 @@ let package = Package(
             name: "prlctlTests",
             dependencies: ["prlctl"],
             resources: [
+                .copy("resources/invalid-vm.json"),
                 .copy("resources/packaged-vm-details.json"),
                 .copy("resources/running-vm-details.json"),
                 .copy("resources/running-vm-with-ip.json"),
