@@ -40,6 +40,10 @@ public struct Parallels {
         try lookupAllVMs().compactMap { $0.asStoppedVM() }
     }
 
+    public func lookupPackagedVMs() throws -> [PackagedVM] {
+        try lookupAllVMs().compactMap { $0.asPackagedVM() }
+    }
+
     public func lookupVM(named handle: String) throws -> VM? {
         guard let vm = try lookupAllVMs().filter({ $0.uuid == handle || $0.name == handle }).first else {
             return nil
