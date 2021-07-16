@@ -63,7 +63,7 @@ public struct Parallels {
     public func importVM(at url: URL) throws -> VM? {
         let previousVMs = try lookupAllVMs()
         // Register the image with Parallels
-        try runner.runCommand(components: ["prlctl", "register", url.path, "--preserve-uuid", "no"])
+        try runner.runCommand(components: ["prlctl", "register", url.path, "--preserve-uuid=no"])
         let currentVMs = try lookupAllVMs()
 
         /// Return just the VM that didn't exist before
