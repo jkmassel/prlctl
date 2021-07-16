@@ -61,6 +61,12 @@ final class ParallelsTests: XCTestCase {
         try Parallels(runner: runner).serviceControl.installLicense(key: "key", company: "company")
         XCTAssertEqual(runner.command, "prlsrvctl install-license -k key --company company --activate-online-immediately")
     }
+
+    func testThatRegisterVMWorks() throws {
+        let runner = TestCommandRunner()
+        try Parallels(runner: runner).registerVM(at: URL(fileURLWithPath: "/dev/null"))
+        XCTAssertEqual(runner.command, "prlctl register /dev/null --preserve-uuid=no")
+    }
 }
 
 extension XCTestCase {

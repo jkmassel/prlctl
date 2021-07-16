@@ -60,10 +60,14 @@ public struct Parallels {
         return try JSONDecoder().decode([VMDetails].self, from: json)
     }
 
+    func registerVM(at url: URL) throws {
+        try runner.runCommand(components: ["prlctl", "register", url.path, "--preserve-uuid=no"])
+    }
+
+    @discardableResult
     public func importVM(at url: URL) throws -> VM? {
         let previousVMs = try lookupAllVMs()
-        // Register the image with Parallels
-        try runner.runCommand(components: ["prlctl", "register", url.path, "--preserve-uuid=no"])
+        try registerVM(at: url)
         let currentVMs = try lookupAllVMs()
 
         /// Return just the VM that didn't exist before
