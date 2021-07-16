@@ -84,6 +84,12 @@ public struct VM: VMProtocol {
     }
 }
 
+extension VM: Equatable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.uuid == rhs.uuid
+    }
+}
+
 public struct PackagedVM: VMProtocol {
     public let uuid: String
     public let name: String
@@ -103,7 +109,7 @@ public struct PackagedVM: VMProtocol {
         self.runner = runner
     }
 
-    func unpack() throws -> StoppedVM {
+    public func unpack() throws -> StoppedVM {
         try runner.runCommand(components: ["prlctl", "unpack", uuid])
         return StoppedVM(uuid: uuid, name: name, runner: runner)
     }
