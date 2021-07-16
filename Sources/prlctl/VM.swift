@@ -109,6 +109,7 @@ public struct PackagedVM: VMProtocol {
         self.runner = runner
     }
 
+    @discardableResult
     public func unpack() throws -> StoppedVM {
         try runner.runCommand(components: ["prlctl", "unpack", uuid])
         return StoppedVM(uuid: uuid, name: name, runner: runner)
