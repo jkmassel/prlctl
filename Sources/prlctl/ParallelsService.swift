@@ -13,6 +13,6 @@ struct ParallelsService {
     }
 
     func installLicense(key: String, company: String) throws {
-        try runner.runCommand(components: ["prlsrvctl", "install-license", "-k", key, "--company", company, "--activate-online-immediately"])
+        try runner.prlsrvctl("install-license", "-k", key, "--company", company, "--activate-online-immediately")
     }
 }

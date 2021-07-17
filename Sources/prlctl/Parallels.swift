@@ -16,7 +16,7 @@ public struct Parallels {
     let serviceControl: ParallelsService
 
     public func lookupAllVMs() throws -> [VM] {
-        guard let output = try runner.runCommand(components: ["prlctl", "list", "--json", "--full", "--all"]).data(using: .utf8) else {
+        guard let output = try runner.prlctl("list", "--json", "--full", "--all").data(using: .utf8) else {
             return []
         }
 
@@ -53,7 +53,7 @@ public struct Parallels {
     }
 
     func lookupAllVMDetails(runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws -> [VMDetails] {
-        guard let json = try runner.runCommand(components: ["prlctl", "list", "--json", "--full", "--all", "--info"]).data(using: .utf8) else {
+        guard let json = try runner.prlctl("list", "--json", "--full", "--all", "--info").data(using: .utf8) else {
             return []
         }
 
@@ -61,7 +61,7 @@ public struct Parallels {
     }
 
     func registerVM(at url: URL) throws {
-        try runner.runCommand(components: ["prlctl", "register", url.path, "--preserve-uuid=no"])
+        try runner.prlctl("register", url.path, "--preserve-uuid=no")
     }
 
     @discardableResult

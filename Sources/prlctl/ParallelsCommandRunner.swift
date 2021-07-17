@@ -6,9 +6,6 @@ public protocol ParallelsCommandRunner {
     func runCommand(command: String) throws -> String
 
     @discardableResult
-    func runCommand(components: [String]) throws -> String
-
-    @discardableResult
     func prlctl(_ args: String...) throws -> String
 
     @discardableResult
@@ -35,10 +32,6 @@ public struct DefaultParallelsCommandRunner: ParallelsCommandRunner {
 
     public func runCommand(command: String) throws -> String {
         return try shellOut(to: command)
-    }
-
-    public func runCommand(components: [String]) throws -> String {
-        try runCommand(command: components.joined(separator: " "))
     }
 
     public func prlctl(_ args: String...) throws -> String {

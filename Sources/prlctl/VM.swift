@@ -121,8 +121,8 @@ public struct PackagedVM: VMProtocol {
 
     @discardableResult
     public func unpack() throws -> StoppedVM {
-        try runner.runCommand(components: ["prlctl", "unpack", uuid])
-        return StoppedVM(uuid: uuid, name: name, runner: runner)
+        try runner.prlctl("unpack", uuid)
+        return StoppedVM(uuid: uuid, name: name)
     }
 }
 
@@ -130,23 +130,19 @@ public struct StoppedVM: VMProtocol {
     public let uuid: String
     public let name: String
 
-    private let runner: ParallelsCommandRunner
-
     public init(vm: StoppedVM) {
         self.uuid = vm.uuid
         self.name = vm.name
-        self.runner = vm.runner
     }
 
-    init(uuid: String, name: String, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) {
+    init(uuid: String, name: String) {
         self.uuid = uuid
         self.name = name
-        self.runner = runner
     }
 
     /// Start the VM
-    public func start() throws {
-        try runner.runCommand(components: ["prlctl", "start", uuid, "--wait"])
+    public func start(runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws {
+        try runner.prlctl("start", uuid, "--wait")
     }
 
     /// Clone the VM
@@ -154,26 +150,29 @@ public struct StoppedVM: VMProtocol {
     /// - Parameters:
     ///     - as: The name to use for the new VM
     ///     - fast: Whether to use the Parallels linked clone feature to speed up VM cloning (on by default)
-    public func clone(as newName: String, fast: Bool = true) throws {
+    public func clone(as newName: String, fast: Bool = true, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws {
         if fast {
-            try runner.runCommand(components: ["prlctl", "clone", uuid, "--name", newName, "--linked"])
+            try runner.prlctl("clone", uuid, "--name", newName, "--linked")
         } else {
-            try runner.runCommand(components: ["prlctl", "clone", uuid, "--name", newName])
+            try runner.prlctl("clone", uuid, "--name", newName)
         }
     }
 
     /// Clean up the VM by removing all snapshots.
     ///
     /// Snapshots are created by running `clone` in `fast` mode – they need to be cleaned because otherwise they can take up a lot of disk space.
-    public func clean() throws {
-        try getSnapshots().forEach {
-            try deleteSnapshot($0)
+    public func clean(runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws {
+        try getSnapshots(runner: runner).forEach {
+            try deleteSnapshot($0, runner: runner)
         }
     }
 
     /// Retrieve a list of snapshots associated with this VM
-    public func getSnapshots() throws -> [VMSnapshot] {
-        let json = try runner.runCommand(components: ["prlctl", "snapshot-list", uuid, "--json"]).data(using: .utf8)!
+    public func getSnapshots(runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws -> [VMSnapshot] {
+        guard let json = try runner.prlctl("snapshot-list", uuid, "--json").data(using: .utf8) else {
+            return []
+        }
+
         return try JSONDecoder()
             .decode(CodableVMSnapshotList.self, from: json)
             .map {
@@ -182,13 +181,8 @@ public struct StoppedVM: VMProtocol {
     }
 
     /// Delete the given snapshot object from this VM
-    public func deleteSnapshot(_ snapshot: VMSnapshot) throws {
-        try runner.runCommand(components: ["prlctl", "snapshot-delete", uuid, "-i", snapshot.uuid])
-    }
-
-    /// Delete this VM
-    public func delete() throws {
-        try runner.runCommand(components: ["prlctl", "delete", uuid])
+    public func deleteSnapshot(_ snapshot: VMSnapshot, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws {
+        try runner.prlctl("snapshot-delete", uuid, "-i", snapshot.uuid)
     }
 }
 
@@ -229,23 +223,19 @@ public struct RunningVM: VMProtocol {
 }
 
 extension RunningVM {
-    public func shutdown(immediately: Bool = false) throws {
-        if immediately {
-            try runner.runCommand(components: ["prlctl", "stop", uuid, "--fast"])
-        } else {
-            try runner.runCommand(components: ["prlctl", "stop", uuid])
-        }
+    public func shutdown(immediately: Bool = false, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws {
+        try runner.stopVM(handle: uuid, fast: immediately)
     }
 
     @discardableResult
     public func runCommand(_ command: String, as user: User = .root) throws -> String {
         if user == .root {
-            return try runner.runCommand(components: ["prlctl", "exec", self.uuid, command])
+            return try runner.prlctl("exec", self.uuid, command)
         } else {
             let command = "su - $USERNAME -c '$COMMAND'"
                 .replacingOccurrences(of: "$USERNAME", with: user.name)
                 .replacingOccurrences(of: "$COMMAND", with: command)
-            return try runner.runCommand(components: ["prlctl", "exec", self.uuid, command])
+            return try runner.prlctl("exec", self.uuid, command)
         }
     }
 }

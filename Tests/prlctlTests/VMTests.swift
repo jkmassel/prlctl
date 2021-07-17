@@ -39,37 +39,37 @@ final class VMTests: XCTestCase {
 
     func testThatStoppedVMCanBeStarted() throws {
         let runner = TestCommandRunner()
-        try StoppedVM(uuid: "machine-uuid", name: "machine-name", runner: runner).start()
+        try StoppedVM(uuid: "machine-uuid", name: "machine-name").start(runner: runner)
         XCTAssertEqual(runner.command, "prlctl start machine-uuid --wait")
     }
 
     func testThatStoppedVMCanBeCloned() throws {
         let runner = TestCommandRunner()
-        try StoppedVM(uuid: "machine-uuid", name: "machine-name", runner: runner).clone(as: "new-machine")
+        try StoppedVM(uuid: "machine-uuid", name: "machine-name").clone(as: "new-machine", runner: runner)
         XCTAssertEqual(runner.command, "prlctl clone machine-uuid --name new-machine --linked")
     }
 
     func testThatStoppedVMCanBeDeepCloned() throws {
         let runner = TestCommandRunner()
-        try StoppedVM(uuid: "machine-uuid", name: "machine-name", runner: runner).clone(as: "new-machine", fast: false)
+        try StoppedVM(uuid: "machine-uuid", name: "machine-name").clone(as: "new-machine", fast: false, runner: runner)
         XCTAssertEqual(runner.command, "prlctl clone machine-uuid --name new-machine")
     }
 
     func testThatStoppedVMCanBeDeleted() throws {
         let runner = TestCommandRunner()
-        try StoppedVM(uuid: "machine-uuid", name: "machine-name", runner: runner).delete()
+        try StoppedVM(uuid: "machine-uuid", name: "machine-name").delete(runner: runner)
         XCTAssertEqual(runner.command, "prlctl delete machine-uuid")
     }
 
     func testThatRunningVMCanBeStopped() throws {
         let runner = TestCommandRunner()
-        try RunningVM(uuid: "machine-uuid", name: "machine-name", ipAddress: "127.0.0.1", runner: runner).shutdown()
+        try RunningVM(uuid: "machine-uuid", name: "machine-name", ipAddress: "127.0.0.1").shutdown(runner: runner)
         XCTAssertEqual(runner.command, "prlctl stop machine-uuid")
     }
 
     func testThatRunningVMCanBeStoppedImmediately() throws {
         let runner = TestCommandRunner()
-        try RunningVM(uuid: "machine-uuid", name: "machine-name", ipAddress: "127.0.0.1", runner: runner).shutdown(immediately: true)
+        try RunningVM(uuid: "machine-uuid", name: "machine-name", ipAddress: "127.0.0.1").shutdown(immediately: true, runner: runner)
         XCTAssertEqual(runner.command, "prlctl stop machine-uuid --fast")
     }
 
@@ -119,7 +119,7 @@ final class VMTests: XCTestCase {
 
     func testThatSnapshotListWorks() throws {
         let runner = TestCommandRunner(response: getJSONResource(named: "vm-snapshot-list"))
-        let vmList = try StoppedVM(uuid: "machine-uuid", name: "machine-name", runner: runner).getSnapshots()
+        let vmList = try StoppedVM(uuid: "machine-uuid", name: "machine-name").getSnapshots(runner: runner)
         XCTAssertEqual(vmList.count, 1)
         XCTAssertEqual(vmList.first?.uuid, "{64d481bb-ce04-45b1-8328-49e4e4c43ddf}")
         XCTAssertEqual(vmList.first?.name, "Snapshot for linked clone")
@@ -128,13 +128,13 @@ final class VMTests: XCTestCase {
     func testThatDeleteSnapshotWorks() throws {
         let runner = TestCommandRunner()
         let snapshot = VMSnapshot(uuid: "snapshot-id", name: "snapshot-name")
-        try StoppedVM(uuid: "machine-uuid", name: "machine-name", runner: runner).deleteSnapshot(snapshot)
+        try StoppedVM(uuid: "machine-uuid", name: "machine-name").deleteSnapshot(snapshot, runner: runner)
         XCTAssertEqual(runner.command, "prlctl snapshot-delete machine-uuid -i snapshot-id")
     }
 
     func testThatCleanWorks() throws {
         let runner = TestCommandRunner(response: getJSONResource(named: "vm-snapshot-list"))
-        try StoppedVM(uuid: "machine-uuid", name: "machine-name", runner: runner).clean()
+        try StoppedVM(uuid: "machine-uuid", name: "machine-name").clean(runner: runner)
         XCTAssertEqual(runner.command, "prlctl snapshot-delete machine-uuid -i {64d481bb-ce04-45b1-8328-49e4e4c43ddf}")
     }
 }

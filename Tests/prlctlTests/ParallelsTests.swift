@@ -4,6 +4,7 @@ import XCTest
 
 class TestCommandRunner: ParallelsCommandRunner {
 
+
     var command: String = ""
     private let response: String
 
@@ -11,8 +12,16 @@ class TestCommandRunner: ParallelsCommandRunner {
         self.response = response
     }
 
+    func prlctl(_ args: String...) throws -> String {
+        try runCommand(components: ["prlctl"] + args)
+    }
+
+    func prlsrvctl(_ args: String...) throws -> String {
+        try runCommand(components: ["prlsrvctl"] + args)
+    }
+
     func runCommand(components: [String]) throws -> String {
-        return try runCommand(command: components.joined(separator: " "))
+        try runCommand(command: components.joined(separator: " "))
     }
 
     func runCommand(command: String) throws -> String {
