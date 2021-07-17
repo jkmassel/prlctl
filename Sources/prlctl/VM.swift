@@ -14,6 +14,15 @@ public protocol VMProtocol {
     var name: String { get }
 }
 
+extension VMProtocol {
+
+    /// Delete this VM
+    public func delete(runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws {
+        try? runner.stopVM(handle: uuid, fast: true) // It's ok if trying to stop the VM fails – it might already be stopped
+        try runner.deleteVM(handle: uuid)
+    }
+}
+
 public struct CodableVM: VMProtocol, Codable {
     public let uuid: String
     public let name: String
