@@ -184,6 +184,37 @@ public struct StoppedVM: VMProtocol {
     public func deleteSnapshot(_ snapshot: VMSnapshot, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws {
         try runner.prlctl("snapshot-delete", uuid, "-i", snapshot.uuid)
     }
+
+    public enum VMOption {
+        case cpuCount(_ newCount: Int)
+        case memorySize(_ megabytes: Int)
+        case hypervisorType(_ type: HypervisorType)
+        case networkType(_ type: NetworkType, interface: String = "net0")
+    }
+
+    public enum HypervisorType: String {
+        case parallels
+        case apple
+    }
+
+    public enum NetworkType: String {
+        case shared = "shared"
+        case bridged = "bridged"
+        case hostOnly = "host-only"
+    }
+
+    public func set(_ option: VMOption, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws {
+        switch option {
+            case .cpuCount(let newCount):
+                try runner.prlctl("set \(uuid) --cpus \(newCount)")
+            case .memorySize(let megabytes):
+                try runner.prlctl("set \(uuid) --memsize \(megabytes)")
+            case .hypervisorType(let type):
+                try runner.prlctl("set \(uuid) --hypervisor-type \(type)")
+            case .networkType(let type, let interface):
+                try runner.prlctl("set \(uuid) --device-set \(interface) --type \(type.rawValue)")
+        }
+    }
 }
 
 public struct RunningVM: VMProtocol {

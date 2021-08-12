@@ -137,4 +137,53 @@ final class VMTests: XCTestCase {
         try StoppedVM(uuid: "machine-uuid", name: "machine-name").clean(runner: runner)
         XCTAssertEqual(runner.command, "prlctl snapshot-delete machine-uuid -i {64d481bb-ce04-45b1-8328-49e4e4c43ddf}")
     }
+
+    func testThatSetCPUCountWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.cpuCount(24), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --cpus 24")
+    }
+
+    func testThatSetMemorySizeWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.memorySize(8192), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --memsize 8192")
+    }
+
+    func testThatSetHypervisorTypeToParallelsWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.hypervisorType(.parallels), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --hypervisor-type parallels")
+    }
+
+    func testThatSetHypervisorTypeToAppleWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.hypervisorType(.apple), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --hypervisor-type apple")
+    }
+
+    func testThatSetNetworkInterfaceTypeToSharedWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.networkType(.shared), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --device-set net0 --type shared")
+    }
+
+    func testThatSetNetworkInterfaceTypeToBridgedWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.networkType(.bridged), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --device-set net0 --type bridged")
+    }
+
+    func testThatSetNetworkInterfaceTypeToHostOnlyWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.networkType(.hostOnly), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --device-set net0 --type host-only")
+    }
 }
