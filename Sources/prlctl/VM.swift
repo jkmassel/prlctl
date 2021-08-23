@@ -36,12 +36,12 @@ public struct VM: VMProtocol {
     let status: VMStatus
     let ip_configured: String
 
-    init(vm: CodableVM) {
-        self.uuid = vm.uuid
-        self.name = vm.name
-        self.status = vm.status
-        self.ip_configured = vm.ip_configured
-    }
+//    init(vm: CodableVM) {
+//        self.uuid = vm.uuid
+//        self.name = vm.name
+//        self.status = vm.status
+//        self.ip_configured = vm.ip_configured
+//    }
 
     init(vm: CodableVM, details: VMDetails) {
         self.uuid = vm.uuid
@@ -92,6 +92,18 @@ public struct VM: VMProtocol {
 
         return PackagedVM(uuid: uuid, name: name)
     }
+
+    public var isSuspendedVM: Bool {
+        status == .suspended
+    }
+
+    public func asSuspendedVM() -> SuspendedVM? {
+        guard isSuspendedVM else {
+            return nil
+        }
+
+        return SuspendedVM(uuid: uuid, name: name)
+    }
 }
 
 extension VM: Equatable {
@@ -104,23 +116,18 @@ public struct PackagedVM: VMProtocol {
     public let uuid: String
     public let name: String
 
-    private let runner: ParallelsCommandRunner
-
     public init(vm: PackagedVM) {
         self.uuid = vm.uuid
         self.name = vm.name
-
-        self.runner = vm.runner
     }
 
     init(uuid: String, name: String, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) {
         self.uuid = uuid
         self.name = name
-        self.runner = runner
     }
 
     @discardableResult
-    public func unpack() throws -> StoppedVM {
+    public func unpack(runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws -> StoppedVM {
         try runner.prlctl("unpack", uuid)
         return StoppedVM(uuid: uuid, name: name)
     }
@@ -184,6 +191,37 @@ public struct StoppedVM: VMProtocol {
     public func deleteSnapshot(_ snapshot: VMSnapshot, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws {
         try runner.prlctl("snapshot-delete", uuid, "-i", snapshot.uuid)
     }
+
+    public enum VMOption {
+        case cpuCount(_ newCount: Int)
+        case memorySize(_ megabytes: Int)
+        case hypervisorType(_ type: HypervisorType)
+        case networkType(_ type: NetworkType, interface: String = "net0")
+    }
+
+    public enum HypervisorType: String {
+        case parallels
+        case apple
+    }
+
+    public enum NetworkType: String {
+        case shared = "shared"
+        case bridged = "bridged"
+        case hostOnly = "host-only"
+    }
+
+    public func set(_ option: VMOption, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws {
+        switch option {
+            case .cpuCount(let newCount):
+                try runner.prlctl("set \(uuid) --cpus \(newCount)")
+            case .memorySize(let megabytes):
+                try runner.prlctl("set \(uuid) --memsize \(megabytes)")
+            case .hypervisorType(let type):
+                try runner.prlctl("set \(uuid) --hypervisor-type \(type)")
+            case .networkType(let type, let interface):
+                try runner.prlctl("set \(uuid) --device-set \(interface) --type \(type.rawValue)")
+        }
+    }
 }
 
 public struct RunningVM: VMProtocol {
@@ -240,6 +278,11 @@ extension RunningVM {
     }
 }
 
+public struct SuspendedVM: VMProtocol {
+    public var uuid: String
+    public var name: String
+}
+
 public struct VMDetails: Codable {
     let uuid: String
     let name: String
@@ -248,7 +291,7 @@ public struct VMDetails: Codable {
     private let path: String
     private let optimization: VMOptimizationDetails
 
-    var isPackage: Bool {
+    public var isPackage: Bool {
         path.hasSuffix(".pvmp")
     }
 

@@ -1,0 +1,190 @@
+{
+    "ID": "0C7954C9-7CA4-4E5A-A84D-5927F4D2D710",
+    "Name": "my-vm",
+    "Description": "",
+    "Type": "VM",
+    "State": "running",
+    "OS": "macosx",
+    "Template": "no",
+    "Uptime": "1384",
+    "Home path": "\/Users\/distiller\/Parallels\/my-vm.pvm\/config.pvs",
+    "Home": "\/Users\/distiller\/Parallels\/my-vm.pvm\/",
+    "GuestTools": {
+        "state": "installed",
+        "version": "16.5.0-49183"
+    },
+    "Mouse and Keyboard": {
+        "Smart mouse optimized for games": "auto",
+        "Sticky mouse": "off",
+        "Smooth scrolling": "on",
+        "Keyboard optimization mode": "auto"
+    },
+    "USB and Bluetooth": {
+        "Automatic sharing cameras": "off",
+        "Automatic sharing bluetooth": "off",
+        "Automatic sharing smart cards": "off",
+        "Support USB 3.0": "on"
+    },
+    "Startup and Shutdown": {
+        "Autostart": "off",
+        "Autostart delay": 0,
+        "Autostop": "suspend",
+        "Startup view": "same",
+        "On shutdown": "close",
+        "On window close": "suspend",
+        "Pause idle": "off",
+        "Undo disks": "off"
+    },
+    "Optimization": {
+        "Faster virtual machine": "on",
+        "Hypervisor type": "apple",
+        "Adaptive hypervisor": "off",
+        "Disabled Windows logo": "on",
+        "Auto compress virtual disks": "off",
+        "Nested virtualization": "off",
+        "PMU virtualization": "off",
+        "Longer battery life": "off",
+        "Show battery status": "on",
+        "Resource quota": "unlimited"
+    },
+    "Travel mode": {
+        "Enter condition": "never",
+        "Enter threshold": 30,
+        "Quit condition": "never"
+    },
+    "Security": {
+        "Encrypted": "no",
+        "TPM enabled": "no",
+        "Custom password protection": "off",
+        "Configuration is locked": "off",
+        "Protected": "no",
+        "Archived": "no"
+    },
+    "Smart Guard": {
+        "enabled": false
+    },
+    "Modality": {
+        "Opacity (percentage)": 50,
+        "Stay on top": "on",
+        "Show on all spaces ": "on",
+        "Capture mouse clicks": "on"
+    },
+    "Fullscreen": {
+        "Use all displays": "off",
+        "Activate spaces on click": "on",
+        "Optimize for games": "off",
+        "Gamma control": "on",
+        "Scale view mode": "auto"
+    },
+    "Coherence": {
+        "Show Windows systray in Mac menu": "on",
+        "Auto-switch to full screen": "on",
+        "Disable aero": "off",
+        "Hide minimized windows": "off"
+    },
+    "Time Synchronization": {
+        "enabled": true,
+        "Smart mode": "off",
+        "Interval (in seconds)": 60,
+        "Timezone synchronization disabled": "off"
+    },
+    "Expiration": {
+        "enabled": false
+    },
+    "Boot order": "hdd0 cdrom0 usb ",
+    "BIOS type": "efi64",
+    "EFI Secure boot": "off",
+    "Allow select boot device": "off",
+    "External boot device": "",
+    "Hardware": {
+        "cpu": {
+            "cpus": 10,
+            "VT-x": true,
+            "hotplug": false,
+            "accl": "high",
+            "mode": "32"
+        },
+        "memory": {
+            "size": "16384Mb",
+            "hotplug": false
+        },
+        "video": {
+            "adapter-type": "apple",
+            "size": "64Mb",
+            "3d-acceleration": "highest",
+            "vertical-sync": "on",
+            "high-resolution": "on",
+            "high-resolution-in-guest": "on",
+            "native-scaling-in-guest": "off",
+            "automatic-video-memory": "off"
+        },
+        "memory_quota": {
+            "auto": "yes"
+        },
+        "hdd0": {
+            "enabled": true,
+            "port": "sata:0",
+            "image": "\/Users\/distiller\/Parallels\/my-vm.pvm\/big-sur-clean-0.hdd",
+            "type": "expanded",
+            "size": "262144Mb",
+            "online-compact": "on"
+        },
+        "cdrom0": {
+            "enabled": true,
+            "port": "sata:1",
+            "image": "\/Applications\/Parallels Desktop.app\/Contents\/Resources\/Tools\/prl-tools-mac.iso",
+            "state": "disconnected"
+        },
+        "usb": {
+            "enabled": true
+        },
+        "net0": {
+            "enabled": true,
+            "type": "shared",
+            "mac": "001C42F95777",
+            "card": "e1000",
+            "preventpromisc": "on",
+            "mac_filter": "on",
+            "ip_filter": "on",
+            "nameservers": "",
+            "searchdomains": ""
+        },
+        "sound0": {
+            "enabled": true,
+            "output": "Default",
+            "mixer": "Mute"
+        }
+    },
+    "Host Shared Folders": {
+        "enabled": true
+    },
+    "Host defined sharing": "User home directory",
+    "Shared Profile": {
+        "enabled": false
+    },
+    "Shared Applications": {
+        "enabled": true,
+        "Host-to-guest apps sharing": "on",
+        "Guest-to-host apps sharing": "on",
+        "Show guest apps folder in Dock": "off",
+        "Show guest notifications": "on",
+        "Bounce dock icon when app flashes": "on"
+    },
+    "SmartMount": {
+        "enabled": true,
+        "Removable drives": "on",
+        "CD/DVD drives": "on",
+        "Network shares": "on"
+    },
+    "Miscellaneous Sharing": {
+        "Shared clipboard": "on",
+        "Shared cloud": "on"
+    },
+    "Advanced": {
+        "VM hostname synchronization": "off",
+        "Public SSH keys synchronization": "off",
+        "Show developer tools": "off",
+        "Swipe from edges": "off",
+        "Share host location": "on"
+    }
+}

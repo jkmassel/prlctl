@@ -39,12 +39,17 @@ let package = Package(
             resources: [
                 .copy("resources/invalid-vm.json"),
                 .copy("resources/packaged-vm-details.json"),
-                .copy("resources/running-vm-details.json"),
+                .copy("resources/packaged-vm.json"),
+                .copy("resources/running-vm-with-ip-details.json"),
                 .copy("resources/running-vm-with-ip.json"),
+                .copy("resources/running-vm-with-ipv6-details.json"),
                 .copy("resources/running-vm-with-ipv6.json"),
+                .copy("resources/running-vm-without-ip-details.json"),
                 .copy("resources/running-vm-without-ip.json"),
+                .copy("resources/stopped-vm-details.json"),
                 .copy("resources/stopped-vm.json"),
-                .copy("resources/vm-list.json"),
+                .copy("resources/suspended-vm-details.json"),
+                .copy("resources/suspended-vm.json"),
                 .copy("resources/vm-snapshot-list.json"),
             ]
         )

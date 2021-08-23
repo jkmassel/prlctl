@@ -16,19 +16,16 @@ public struct Parallels {
     let serviceControl: ParallelsService
 
     public func lookupAllVMs() throws -> [VM] {
-        guard let output = try runner.prlctl("list", "--json", "--full", "--all").data(using: .utf8) else {
-            return []
-        }
 
-        // If for some reason we can't lookup VM Details, we can still continue
-        let details = (try? lookupAllVMDetails(runner: runner)) ?? []
+        let info    = try lookupAllVMInfo()
+        let details = try lookupAllVMDetails()
 
-        return try JSONDecoder().decode([CodableVM].self, from: output).compactMap { vm in
-            guard let vmDetails = details.first(where: { $0.uuid == vm.uuid }) else {
-                return VM(vm: vm)
+        return info.compactMap {
+            guard let vmDetails = details[$0.key] else {
+                return nil
             }
 
-            return VM(vm: vm, details: vmDetails)
+            return VM(vm: $0.value, details: vmDetails)
         }
     }
 
@@ -44,6 +41,10 @@ public struct Parallels {
         try lookupAllVMs().compactMap { $0.asPackagedVM() }
     }
 
+    public func lookupSuspendedVMs() throws -> [SuspendedVM] {
+        try lookupAllVMs().compactMap { $0.asSuspendedVM() }
+    }
+
     public func lookupVM(named handle: String) throws -> VM? {
         guard let vm = try lookupAllVMs().filter({ $0.uuid == handle || $0.name == handle }).first else {
             return nil
@@ -52,12 +53,28 @@ public struct Parallels {
         return vm
     }
 
-    func lookupAllVMDetails(runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws -> [VMDetails] {
-        guard let json = try runner.prlctl("list", "--json", "--full", "--all", "--info").data(using: .utf8) else {
-            return []
+    func lookupAllVMInfo() throws -> [String: CodableVM] {
+        guard let json = try runner.prlctl("list", "--json", "--full", "--all").data(using: .utf8) else {
+            return [:]
         }
 
-        return try JSONDecoder().decode([VMDetails].self, from: json)
+        return try JSONDecoder().decode([CodableVM].self, from: json).reduce([String : CodableVM](), {
+            var dict = $0
+            dict[$1.uuid] = $1
+            return dict
+        })
+    }
+
+    func lookupAllVMDetails() throws -> [String: VMDetails] {
+        guard let json = try runner.prlctl("list", "--json", "--full", "--all", "--info").data(using: .utf8) else {
+            return [:]
+        }
+
+        return try JSONDecoder().decode([VMDetails].self, from: json).reduce([String: VMDetails](), {
+            var dict = $0
+            dict[$1.uuid] = $1
+            return dict
+        })
     }
 
     func registerVM(at url: URL) throws {
