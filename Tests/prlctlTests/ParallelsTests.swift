@@ -103,8 +103,8 @@ extension XCTestCase {
         let details: Data
 
         func parse() throws -> VM? {
-            let info = try JSONDecoder().decode(CodableVM.self, from: info)
-            let details = try JSONDecoder().decode(VMDetails.self, from: details)
+            let info = try JSONDecoder().decode(CodableVM.self, from: self.info)
+            let details = try JSONDecoder().decode(VMDetails.self, from: self.details)
 
             return VM(vm: info, details: details)
         }
