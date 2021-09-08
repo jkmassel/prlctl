@@ -45,6 +45,10 @@ public struct Parallels {
         try lookupAllVMs().compactMap { $0.asSuspendedVM() }
     }
 
+    public func lookupInvalidVMs() throws -> [InvalidVM] {
+        try lookupAllVMs().compactMap { $0.asInvalidVM() }
+    }
+
     public func lookupVM(named handle: String) throws -> VM? {
         guard let vm = try lookupAllVMs().filter({ $0.uuid == handle || $0.name == handle }).first else {
             return nil

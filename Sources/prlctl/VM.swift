@@ -104,6 +104,18 @@ public struct VM: VMProtocol {
 
         return SuspendedVM(uuid: uuid, name: name)
     }
+
+    public var isInvalidVM: Bool {
+        status == .invalid
+    }
+
+    public func asInvalidVM() -> InvalidVM? {
+        guard isInvalidVM else {
+            return nil
+        }
+
+        return InvalidVM(uuid: uuid, name: name)
+    }
 }
 
 extension VM: Equatable {
@@ -279,9 +291,13 @@ extension RunningVM {
 }
 
 public struct SuspendedVM: VMProtocol {
-    public var uuid: String
-    public var name: String
+    public let uuid: String
+    public let name: String
 }
+
+public struct InvalidVM: VMProtocol {
+    public let uuid: String
+    public let name: String}
 
 public struct VMDetails: Codable {
     let uuid: String
