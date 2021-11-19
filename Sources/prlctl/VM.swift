@@ -7,6 +7,8 @@ public enum VMStatus: String, Codable {
     case packaged
     case suspended
     case invalid
+    case starting
+    case stopping
 }
 
 public protocol VMProtocol {
