@@ -49,6 +49,16 @@ public struct Parallels {
         try lookupAllVMs().compactMap { $0.asInvalidVM() }
     }
 
+    /// Returns all VMs that are currently booting
+    public func lookupStartingVMs() throws -> [StartingVM] {
+        try lookupAllVMs().compactMap { $0.asStartingVM() }
+    }
+
+    /// Returns all VMs that are currently shutting down
+    public func lookupStoppingVMs() throws -> [StoppingVM] {
+        try lookupAllVMs().compactMap { $0.asStoppingVM() }
+    }
+
     public func lookupVM(named handle: String) throws -> VM? {
         guard let vm = try lookupAllVMs().filter({ $0.uuid == handle || $0.name == handle }).first else {
             return nil
