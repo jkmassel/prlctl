@@ -45,8 +45,13 @@ public struct Parallels {
         try lookupAllVMs().compactMap { $0.asSuspendedVM() }
     }
 
+    public func lookupResumingVMs() throws -> [ResumingVM] {
+        try lookupAllVMs().compactMap { $0.asResumingVM() }
+    }
+
     public func lookupInvalidVMs() throws -> [InvalidVM] {
-        try lookupAllVMs().compactMap { $0.asInvalidVM() }
+        let allVms = try lookupAllVMs()
+        return allVms.compactMap { $0.asInvalidVM() }
     }
 
     /// Returns all VMs that are currently booting
@@ -68,9 +73,7 @@ public struct Parallels {
     }
 
     func lookupAllVMInfo() throws -> [String: CodableVM] {
-        guard let json = try runner.prlctl("list", "--json", "--full", "--all").data(using: .utf8) else {
-            return [:]
-        }
+        let json = try runner.prlctlJSON("list", "--json", "--full", "--all")
 
         return try JSONDecoder().decode([CodableVM].self, from: json).reduce([String : CodableVM](), {
             var dict = $0
@@ -80,9 +83,7 @@ public struct Parallels {
     }
 
     func lookupAllVMDetails() throws -> [String: VMDetails] {
-        guard let json = try runner.prlctl("list", "--json", "--full", "--all", "--info").data(using: .utf8) else {
-            return [:]
-        }
+        let json = try runner.prlctlJSON("list", "--json", "--full", "--all", "--info")
 
         return try JSONDecoder().decode([VMDetails].self, from: json).reduce([String: VMDetails](), {
             var dict = $0

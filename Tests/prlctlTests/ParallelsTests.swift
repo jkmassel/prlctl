@@ -8,9 +8,37 @@ extension String: LocalizedError {
 
 final class ParallelsTests: XCTestCase {
 
-    func testThatStoppedVMsCanBeLookedUp() throws {
+    func testThatLookupAllVMsIsEmptyForNoVMs() throws {
+        let parallels = Parallels(runner: TestCommandRunner(responses: [
+            "prlctl list --json --full --all": "[]",
+            "prlctl list --json --full --all --info": "[]",
+        ]))
+
+        XCTAssertTrue(try parallels.lookupAllVMs().isEmpty)
+    }
+
+    func testThatLookupAllVMsThrowsForInvalidJSON() throws {
+        let parallels = Parallels(runner: TestCommandRunner(responses: [
+            "prlctl list --json --full --all": "foo",
+            "prlctl list --json --full --all --info": "[]",
+        ]))
+
+        XCTAssertThrowsError(try parallels.lookupAllVMs())
+    }
+
+    func testThatInvalidVMsCanBeLookedUp() throws {
         let parallels = try getParallelsWithTestData()
-        XCTAssertEqual(1, try parallels.lookupStoppedVMs().count)
+        XCTAssertEqual(1, try parallels.lookupInvalidVMs().count)
+    }
+
+    func testThatPackagedVMsCanBeLookedUp() throws {
+        let parallels = try getParallelsWithTestData()
+        XCTAssertEqual(1, try parallels.lookupPackagedVMs().count)
+    }
+
+    func testThatResumingVMsCanBeLookedUp() throws {
+        let parallels = try getParallelsWithTestData()
+        XCTAssertEqual(1, try parallels.lookupResumingVMs().count)
     }
 
     func testThatRunningVMsCanBeLookedUp() throws {
@@ -18,16 +46,20 @@ final class ParallelsTests: XCTestCase {
         XCTAssertEqual(3, try parallels.lookupRunningVMs().count)
     }
 
-    func testThatLookupVMReturnsStoppedVM() throws {
+    func testThatStoppedVMsCanBeLookedUp() throws {
         let parallels = try getParallelsWithTestData()
-        let vm = try parallels.lookupVM(named: "stopped-vm")
-        XCTAssertNotNil(vm?.asStoppedVM())
+        XCTAssertEqual(1, try parallels.lookupStoppedVMs().count)
     }
 
-    func testThatLookupVMReturnsStartedVM() throws {
+    func testThatSuspendedVMsCanBeLookedUp() throws {
         let parallels = try getParallelsWithTestData()
-        let vm = try parallels.lookupVM(named: "running-vm-with-ip")
-        XCTAssertNotNil(vm?.asRunningVM())
+        XCTAssertEqual(1, try parallels.lookupSuspendedVMs().count)
+    }
+
+    func testThatLookupVMReturnsNilForInvalidHandle() throws {
+        let parallels = try getParallelsWithTestData()
+        let vm = try parallels.lookupVM(named: "invalid-vm-handle")
+        XCTAssertNil(vm)
     }
 
     func testThatLookupVMReturnsPackagedVM() throws {
@@ -36,16 +68,34 @@ final class ParallelsTests: XCTestCase {
         XCTAssertNotNil(vm?.asPackagedVM())
     }
 
+    func testThatLookupVMReturnsResumingVM() throws {
+        let parallels = try getParallelsWithTestData()
+        let vm = try parallels.lookupVM(named: "resuming-vm")
+        XCTAssertNotNil(vm?.asResumingVM())
+    }
+
+    func testThatLookupVMReturnsRunningVM() throws {
+        let parallels = try getParallelsWithTestData()
+        let vm = try parallels.lookupVM(named: "running-vm-with-ip")
+        XCTAssertNotNil(vm?.asRunningVM())
+    }
+
+    func testThatLookupVMReturnsRunningIPV6VM() throws {
+        let parallels = try getParallelsWithTestData()
+        let vm = try parallels.lookupVM(named: "running-vm-with-ipv6")
+        XCTAssertNotNil(vm?.asRunningVM())
+    }
+
+    func testThatLookupVMReturnsStoppedVM() throws {
+        let parallels = try getParallelsWithTestData()
+        let vm = try parallels.lookupVM(named: "stopped-vm")
+        XCTAssertNotNil(vm?.asStoppedVM())
+    }
+
     func testThatLookupVMReturnsSuspendedVM() throws {
         let parallels = try getParallelsWithTestData()
         let vm = try parallels.lookupVM(named: "suspended-vm")
         XCTAssertNotNil(vm?.asSuspendedVM())
-    }
-
-    func testThatLookupVMReturnsNilForInvalidHandle() throws {
-        let parallels = try getParallelsWithTestData()
-        let vm = try parallels.lookupVM(named: "invalid-vm-handle")
-        XCTAssertNil(vm)
     }
 
     func testThatLicenseActivationWorks() throws {
@@ -68,12 +118,14 @@ final class ParallelsTests: XCTestCase {
     }
 
     private let testVMNames = [
+        "invalid-vm",
         "packaged-vm",
         "running-vm-with-ip",
         "running-vm-with-ipv6",
         "running-vm-without-ip",
         "stopped-vm",
         "suspended-vm",
+        "resuming-vm",
     ]
 
     private func getVMList() throws -> String {

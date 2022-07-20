@@ -34,6 +34,10 @@ class TestCommandRunner: ParallelsCommandRunner {
         try runCommand(components: ["prlctl"] + args)
     }
 
+    func prlctlJSON(_ args: String...) throws -> Data {
+        try runCommand(components: ["prlctl"] + args).data(using: .utf8)!
+    }
+
     func prlsrvctl(_ args: String...) throws -> String {
         try runCommand(components: ["prlsrvctl"] + args)
     }

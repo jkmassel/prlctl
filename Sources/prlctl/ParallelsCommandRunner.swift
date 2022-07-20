@@ -8,6 +8,8 @@ public protocol ParallelsCommandRunner {
     @discardableResult
     func prlctl(_ args: String...) throws -> String
 
+    func prlctlJSON(_ args: String...) throws -> Data
+    
     @discardableResult
     func prlsrvctl(_ args: String...) throws -> String
 }
@@ -38,7 +40,19 @@ public struct DefaultParallelsCommandRunner: ParallelsCommandRunner {
         return try shellOut(to: "prlctl", arguments: args)
     }
 
+    public func prlctlJSON(_ args: String...) throws -> Data {
+        let result = try shellOut(to: "prlctl", arguments: args)
+
+        guard let data = result.data(using: .utf8) else {
+            throw InvalidJSONError()
+        }
+        
+        return data
+    }
+    
     public func prlsrvctl(_ args: String...) throws -> String {
         return try shellOut(to: "prlsrvctl", arguments: args)
     }
+    
+    struct InvalidJSONError: Error{}
 }

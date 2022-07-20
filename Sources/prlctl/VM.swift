@@ -9,6 +9,7 @@ public enum VMStatus: String, Codable {
     case invalid
     case starting
     case stopping
+    case resuming
 }
 
 public protocol VMProtocol {
@@ -38,85 +39,18 @@ public struct VM: VMProtocol {
     let status: VMStatus
     let ip_configured: String
 
-//    init(vm: CodableVM) {
-//        self.uuid = vm.uuid
-//        self.name = vm.name
-//        self.status = vm.status
-//        self.ip_configured = vm.ip_configured
-//    }
-
+    init(uuid: String, name: String, status: VMStatus, ip_configured: String) {
+        self.uuid = uuid
+        self.name = name
+        self.status = status
+        self.ip_configured = ip_configured
+    }
+    
     init(vm: CodableVM, details: VMDetails) {
         self.uuid = vm.uuid
         self.name = vm.name
         self.ip_configured = vm.ip_configured
         self.status = details.isPackage ? .packaged : vm.status
-    }
-
-    public init(from vm: VM) {
-        self.uuid = vm.uuid
-        self.name = vm.name
-        self.status = vm.status
-        self.ip_configured = vm.ip_configured
-    }
-
-    public var isRunningVM: Bool {
-        status == .running
-    }
-
-    public func asRunningVM() -> RunningVM? {
-        guard isRunningVM else {
-            return nil
-        }
-
-        return RunningVM(uuid: uuid, name: name, ipAddress: ip_configured)
-    }
-
-    public var isStoppedVM: Bool {
-        status == .stopped
-    }
-
-    public func asStoppedVM() -> StoppedVM? {
-        guard isStoppedVM else {
-            return nil
-        }
-
-        return StoppedVM(uuid: uuid, name: name)
-    }
-
-    public var isPackagedVM: Bool {
-        status == .packaged
-    }
-
-    public func asPackagedVM() -> PackagedVM? {
-        guard isPackagedVM else {
-            return nil
-        }
-
-        return PackagedVM(uuid: uuid, name: name)
-    }
-
-    public var isSuspendedVM: Bool {
-        status == .suspended
-    }
-
-    public func asSuspendedVM() -> SuspendedVM? {
-        guard isSuspendedVM else {
-            return nil
-        }
-
-        return SuspendedVM(uuid: uuid, name: name)
-    }
-
-    public var isInvalidVM: Bool {
-        status == .invalid
-    }
-
-    public func asInvalidVM() -> InvalidVM? {
-        guard isInvalidVM else {
-            return nil
-        }
-
-        return InvalidVM(uuid: uuid, name: name)
     }
 
     public var isStartingVM: Bool {
@@ -144,6 +78,82 @@ public struct VM: VMProtocol {
     }
 }
 
+// MARK: Conversion Methods
+// These are in the same order as the sample data on the filesystem in Tests/prlctlTests/resources
+extension VM {
+    public var isInvalidVM: Bool {
+        status == .invalid
+    }
+
+    public func asInvalidVM() -> InvalidVM? {
+        guard isInvalidVM else {
+            return nil
+        }
+
+        return InvalidVM(uuid: uuid, name: name)
+    }
+
+    public var isPackagedVM: Bool {
+        status == .packaged
+    }
+
+    public func asPackagedVM() -> PackagedVM? {
+        guard isPackagedVM else {
+            return nil
+        }
+
+        return PackagedVM(uuid: uuid, name: name)
+    }
+
+    public var isResuming: Bool {
+        status == .resuming
+    }
+
+    public func asResumingVM() -> ResumingVM? {
+        guard isResuming else {
+            return nil
+        }
+
+        return ResumingVM(uuid: uuid, name: name)
+    }
+
+    public var isRunningVM: Bool {
+        status == .running
+    }
+
+    public func asRunningVM() -> RunningVM? {
+        guard isRunningVM else {
+            return nil
+        }
+
+        return RunningVM(uuid: uuid, name: name, ipAddress: ip_configured)
+    }
+
+    public var isStoppedVM: Bool {
+        status == .stopped
+    }
+
+    public func asStoppedVM() -> StoppedVM? {
+        guard isStoppedVM else {
+            return nil
+        }
+
+        return StoppedVM(uuid: uuid, name: name)
+    }
+
+    public var isSuspendedVM: Bool {
+        status == .suspended
+    }
+
+    public func asSuspendedVM() -> SuspendedVM? {
+        guard isSuspendedVM else {
+            return nil
+        }
+
+        return SuspendedVM(uuid: uuid, name: name)
+    }
+}
+
 extension VM: Equatable {
     public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.uuid == rhs.uuid
@@ -153,11 +163,6 @@ extension VM: Equatable {
 public struct PackagedVM: VMProtocol {
     public let uuid: String
     public let name: String
-
-    public init(vm: PackagedVM) {
-        self.uuid = vm.uuid
-        self.name = vm.name
-    }
 
     init(uuid: String, name: String, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) {
         self.uuid = uuid
@@ -174,11 +179,6 @@ public struct PackagedVM: VMProtocol {
 public struct StoppedVM: VMProtocol {
     public let uuid: String
     public let name: String
-
-    public init(vm: StoppedVM) {
-        self.uuid = vm.uuid
-        self.name = vm.name
-    }
 
     init(uuid: String, name: String) {
         self.uuid = uuid
@@ -214,9 +214,7 @@ public struct StoppedVM: VMProtocol {
 
     /// Retrieve a list of snapshots associated with this VM
     public func getSnapshots(runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws -> [VMSnapshot] {
-        guard let json = try runner.prlctl("snapshot-list", uuid, "--json").data(using: .utf8) else {
-            return []
-        }
+        let json = try runner.prlctlJSON("snapshot-list", uuid, "--json")
 
         return try JSONDecoder()
             .decode(CodableVMSnapshotList.self, from: json)
@@ -270,14 +268,6 @@ public struct RunningVM: VMProtocol {
 
     private let runner: ParallelsCommandRunner
 
-    public init(vm: RunningVM) {
-        self.uuid = vm.uuid
-        self.name = vm.name
-        self.ipAddress = vm.ipAddress
-
-        self.runner = vm.runner
-    }
-
     init(uuid: String, name: String, ipAddress: String, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) {
         self.uuid = uuid
         self.name = name
@@ -305,14 +295,13 @@ extension RunningVM {
 
     @discardableResult
     public func runCommand(_ command: String, as user: User = .root) throws -> String {
-        if user == .root {
-            return try runner.prlctl("exec", self.uuid, command)
-        } else {
-            let command = "su - $USERNAME -c '$COMMAND'"
-                .replacingOccurrences(of: "$USERNAME", with: user.name)
-                .replacingOccurrences(of: "$COMMAND", with: command)
-            return try runner.prlctl("exec", self.uuid, command)
+        var internalCommand = command
+
+        if user != .root {
+            internalCommand = "su - '\(user.name)' -c '\(command)'"
         }
+
+        return try runner.prlctl("exec", self.uuid, internalCommand)
     }
 }
 
@@ -336,6 +325,11 @@ public struct StoppingVM: VMProtocol {
     public let name: String
 }
 
+public struct ResumingVM: VMProtocol {
+    public let uuid: String
+    public let name: String
+}
+    
 public struct VMDetails: Codable {
     let uuid: String
     let name: String

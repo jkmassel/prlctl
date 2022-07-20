@@ -4,6 +4,35 @@ import XCTest
 
 final class VMTests: XCTestCase {
 
+    func testThatInvalidVMCanBeParsed() throws {
+        let data = getVmDataFrom(infoKey: "invalid-vm", detailsKey: "running-vm-with-ip-details")
+        XCTAssertNotNil(try data.parse()?.asInvalidVM())
+    }
+
+    func testThatInvalidVMReturnsNilForValidVM() throws {
+        let data = getVmDataFrom(infoKey: "packaged-vm", detailsKey: "packaged-vm-details")
+        XCTAssertNil(try data.parse()?.asInvalidVM())
+    }
+
+    func testThatParsingVMsReturnsNilForInvalidVM() throws {
+        let data = getVmDataFrom(infoKey: "invalid-vm", detailsKey: "running-vm-with-ip-details")
+        XCTAssertNil(try data.parse()?.asPackagedVM())
+        XCTAssertNil(try data.parse()?.asResumingVM())
+        XCTAssertNil(try data.parse()?.asRunningVM())
+        XCTAssertNil(try data.parse()?.asStoppedVM())
+        XCTAssertNil(try data.parse()?.asSuspendedVM())
+    }
+
+    func testThatPackagedVMCanBeParsed() throws {
+        let data = getVmDataFrom(infoKey: "packaged-vm", detailsKey: "packaged-vm-details")
+        XCTAssertNotNil(try data.parse()?.asPackagedVM())
+    }
+
+    func testThatResumingVMCanBeParsed() throws {
+        let data = getVmDataFrom(infoKey: "resuming-vm", detailsKey: "resuming-vm-details")
+        XCTAssertNotNil(try data.parse()?.asResumingVM())
+    }
+
     func testThatRunningVMWithIPAddressCanBeParsed() throws {
         let data = getVmDataFrom(infoKey: "running-vm-with-ip", detailsKey: "running-vm-with-ip-details")
         let vm = try XCTUnwrap(try data.parse()?.asRunningVM())
@@ -26,6 +55,14 @@ final class VMTests: XCTestCase {
         XCTAssertFalse(vm.hasIpAddress)
         XCTAssertFalse(vm.hasIpV4Address)
         XCTAssertFalse(vm.hasIpV6Address)
+    }
+
+    // Not a particularly useful test, but locks in the API
+    func testThatRunningVMCanBeInstantiated() throws {
+        let vm = RunningVM(uuid: "vm-uuid", name: "vm-name", ipAddress: "127.0.0.1")
+        XCTAssertEqual(vm.uuid, "vm-uuid")
+        XCTAssertEqual(vm.name, "vm-name")
+        XCTAssertEqual(vm.ipAddress, "127.0.0.1")
     }
 
     func testThatStoppedVMCanBeParsed() throws {
@@ -84,21 +121,20 @@ final class VMTests: XCTestCase {
     func testThatRunningVMCanPerformCommandsAsAnyUser() throws {
         let runner = TestCommandRunner()
         try RunningVM(uuid: "machine-uuid", name: "machine-name", ipAddress: "127.0.0.1", runner: runner).runCommand("ls", as: User(named: "user"))
-        XCTAssertEqual(runner.command, "prlctl exec machine-uuid su - user -c 'ls'")
+        XCTAssertEqual(runner.command, "prlctl exec machine-uuid su - 'user' -c 'ls'")
     }
 
+    func testThatRunningVMCanPerformCommandsWithEscapedUsername() throws {
+        let runner = TestCommandRunner()
+        try RunningVM(uuid: "machine-uuid", name: "machine-name", ipAddress: "127.0.0.1", runner: runner).runCommand("ls", as: User(named: "my user"))
+        XCTAssertEqual(runner.command, "prlctl exec machine-uuid su - 'my user' -c 'ls'")
+
+    }
+    
     func testThatVMDetailsCanBeParsed() throws {
         let json = getJSONDataForResource(named: "packaged-vm-details")
         let vm = try XCTUnwrap(JSONDecoder().decode(VMDetails.self, from: json))
-
         XCTAssertEqual(vm.uuid, "bd70007c-83b8-4642-b1d0-fa8ddfa0a4cf")
-    }
-
-    func testThatPackagedVMCanBeParsed() throws {
-        let codableVM = try XCTUnwrap(JSONDecoder().decode(CodableVM.self, from: getJSONDataForResource(named: "stopped-vm")))
-        let vmDetails = try XCTUnwrap(JSONDecoder().decode(VMDetails.self, from: getJSONDataForResource(named: "packaged-vm-details")))
-        let vm = try XCTUnwrap(VM(vm: codableVM, details: vmDetails))
-        XCTAssertEqual(VMStatus.packaged, vm.status)
     }
 
     func testThatStartedVMWithDetailsCanBeParsed() throws {
@@ -108,23 +144,30 @@ final class VMTests: XCTestCase {
         XCTAssertEqual(VMStatus.running, vm.status)
     }
 
-    func testThatInvalidVMCanBeParsed() throws {
-        let data = getVmDataFrom(infoKey: "invalid-vm", detailsKey: "running-vm-with-ip-details")
-        let vm = try XCTUnwrap(try data.parse())
-        XCTAssertEqual(VMStatus.invalid, vm.status)
-    }
-
     func testThatSnapshotListCanBeParsed() throws {
         let vmList = try XCTUnwrap((JSONDecoder().decode(CodableVMSnapshotList.self, from: getJSONDataForResource(named: "vm-snapshot-list"))))
         XCTAssertEqual(vmList.count, 1)
     }
 
+    func testThatSnapshotListCommandIsCorrect() throws {
+        let runner = TestCommandRunner(response: "{}")
+        let vm = StoppedVM(uuid: "uuid", name: "name")
+        _ = try vm.getSnapshots(runner: runner)
+        XCTAssertEqual(runner.command, "prlctl snapshot-list uuid --json")
+    }
+    
     func testThatSnapshotListWorks() throws {
         let runner = TestCommandRunner(response: getJSONResource(named: "vm-snapshot-list"))
         let vmList = try StoppedVM(uuid: "machine-uuid", name: "machine-name").getSnapshots(runner: runner)
         XCTAssertEqual(vmList.count, 1)
         XCTAssertEqual(vmList.first?.uuid, "{64d481bb-ce04-45b1-8328-49e4e4c43ddf}")
         XCTAssertEqual(vmList.first?.name, "Snapshot for linked clone")
+    }
+
+    func testThatEmptySnapshotListReturnsEmptyArray() throws {
+        let runner = TestCommandRunner(response: getJSONResource(named: "vm-snapshot-list-empty"))
+        let vmList = try StoppedVM(uuid: "machine-uuid", name: "machine-name").getSnapshots(runner: runner)
+        XCTAssertTrue(vmList.isEmpty)
     }
 
     func testThatDeleteSnapshotWorks() throws {
@@ -187,5 +230,11 @@ final class VMTests: XCTestCase {
         let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
         try vm.set(.networkType(.hostOnly), runner: runner)
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --device-set net0 --type host-only")
+    }
+
+    func testThatVMEqualityIsBasedOnUUID() throws {
+        let vm1 = VM(uuid: "uuid", name: "name 1", status: .stopped, ip_configured: "127.0.0.1")
+        let vm2 = VM(uuid: "uuid", name: "name 2", status: .stopped, ip_configured: "127.0.0.1")
+        XCTAssertEqual(vm1, vm2)
     }
 }
