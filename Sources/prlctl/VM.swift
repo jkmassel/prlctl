@@ -9,6 +9,7 @@ public enum VMStatus: String, Codable {
     case invalid
     case starting
     case stopping
+    case resuming
 }
 
 public protocol VMProtocol {
@@ -38,25 +39,11 @@ public struct VM: VMProtocol {
     let status: VMStatus
     let ip_configured: String
 
-//    init(vm: CodableVM) {
-//        self.uuid = vm.uuid
-//        self.name = vm.name
-//        self.status = vm.status
-//        self.ip_configured = vm.ip_configured
-//    }
-
     init(vm: CodableVM, details: VMDetails) {
         self.uuid = vm.uuid
         self.name = vm.name
         self.ip_configured = vm.ip_configured
         self.status = details.isPackage ? .packaged : vm.status
-    }
-
-    public init(from vm: VM) {
-        self.uuid = vm.uuid
-        self.name = vm.name
-        self.status = vm.status
-        self.ip_configured = vm.ip_configured
     }
 
     public var isRunningVM: Bool {
@@ -142,6 +129,18 @@ public struct VM: VMProtocol {
 
         return StoppingVM(uuid: uuid, name: name)
     }
+
+    public var isResuming: Bool {
+        status == .resuming
+    }
+
+    public func asResumingVM() -> ResumingVM? {
+        guard isResuming else {
+            return nil
+        }
+
+        return ResumingVM(uuid: uuid, name: name)
+    }
 }
 
 extension VM: Equatable {
@@ -153,11 +152,6 @@ extension VM: Equatable {
 public struct PackagedVM: VMProtocol {
     public let uuid: String
     public let name: String
-
-    public init(vm: PackagedVM) {
-        self.uuid = vm.uuid
-        self.name = vm.name
-    }
 
     init(uuid: String, name: String, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) {
         self.uuid = uuid
@@ -174,11 +168,6 @@ public struct PackagedVM: VMProtocol {
 public struct StoppedVM: VMProtocol {
     public let uuid: String
     public let name: String
-
-    public init(vm: StoppedVM) {
-        self.uuid = vm.uuid
-        self.name = vm.name
-    }
 
     init(uuid: String, name: String) {
         self.uuid = uuid
@@ -270,14 +259,6 @@ public struct RunningVM: VMProtocol {
 
     private let runner: ParallelsCommandRunner
 
-    public init(vm: RunningVM) {
-        self.uuid = vm.uuid
-        self.name = vm.name
-        self.ipAddress = vm.ipAddress
-
-        self.runner = vm.runner
-    }
-
     init(uuid: String, name: String, ipAddress: String, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) {
         self.uuid = uuid
         self.name = name
@@ -336,6 +317,11 @@ public struct StoppingVM: VMProtocol {
     public let name: String
 }
 
+public struct ResumingVM: VMProtocol {
+    public let uuid: String
+    public let name: String
+}
+    
 public struct VMDetails: Codable {
     let uuid: String
     let name: String
