@@ -121,13 +121,19 @@ final class VMTests: XCTestCase {
     func testThatRunningVMCanPerformCommandsAsAnyUser() throws {
         let runner = TestCommandRunner()
         try RunningVM(uuid: "machine-uuid", name: "machine-name", ipAddress: "127.0.0.1", runner: runner).runCommand("ls", as: User(named: "user"))
-        XCTAssertEqual(runner.command, "prlctl exec machine-uuid su - user -c 'ls'")
+        XCTAssertEqual(runner.command, "prlctl exec machine-uuid su - 'user' -c 'ls'")
     }
 
+    func testThatRunningVMCanPerformCommandsWithEscapedUsername() throws {
+        let runner = TestCommandRunner()
+        try RunningVM(uuid: "machine-uuid", name: "machine-name", ipAddress: "127.0.0.1", runner: runner).runCommand("ls", as: User(named: "my user"))
+        XCTAssertEqual(runner.command, "prlctl exec machine-uuid su - 'my user' -c 'ls'")
+
+    }
+    
     func testThatVMDetailsCanBeParsed() throws {
         let json = getJSONDataForResource(named: "packaged-vm-details")
         let vm = try XCTUnwrap(JSONDecoder().decode(VMDetails.self, from: json))
-
         XCTAssertEqual(vm.uuid, "bd70007c-83b8-4642-b1d0-fa8ddfa0a4cf")
     }
 
@@ -143,6 +149,13 @@ final class VMTests: XCTestCase {
         XCTAssertEqual(vmList.count, 1)
     }
 
+    func testThatSnapshotListCommandIsCorrect() throws {
+        let runner = TestCommandRunner(response: "{}")
+        let vm = StoppedVM(uuid: "uuid", name: "name")
+        _ = try vm.getSnapshots(runner: runner)
+        XCTAssertEqual(runner.command, "prlctl snapshot-list uuid --json")
+    }
+    
     func testThatSnapshotListWorks() throws {
         let runner = TestCommandRunner(response: getJSONResource(named: "vm-snapshot-list"))
         let vmList = try StoppedVM(uuid: "machine-uuid", name: "machine-name").getSnapshots(runner: runner)
@@ -217,5 +230,11 @@ final class VMTests: XCTestCase {
         let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
         try vm.set(.networkType(.hostOnly), runner: runner)
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --device-set net0 --type host-only")
+    }
+
+    func testThatVMEqualityIsBasedOnUUID() throws {
+        let vm1 = VM(uuid: "uuid", name: "name 1", status: .stopped, ip_configured: "127.0.0.1")
+        let vm2 = VM(uuid: "uuid", name: "name 2", status: .stopped, ip_configured: "127.0.0.1")
+        XCTAssertEqual(vm1, vm2)
     }
 }

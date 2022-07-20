@@ -295,14 +295,13 @@ extension RunningVM {
 
     @discardableResult
     public func runCommand(_ command: String, as user: User = .root) throws -> String {
-        if user == .root {
-            return try runner.prlctl("exec", self.uuid, command)
-        } else {
-            let command = "su - $USERNAME -c '$COMMAND'"
-                .replacingOccurrences(of: "$USERNAME", with: user.name)
-                .replacingOccurrences(of: "$COMMAND", with: command)
-            return try runner.prlctl("exec", self.uuid, command)
+        var internalCommand = command
+
+        if user != .root {
+            internalCommand = "su - '\(user.name)' -c '\(command)'"
         }
+
+        return try runner.prlctl("exec", self.uuid, internalCommand)
     }
 }
 
