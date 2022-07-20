@@ -73,9 +73,7 @@ public struct Parallels {
     }
 
     func lookupAllVMInfo() throws -> [String: CodableVM] {
-        guard let json = try runner.prlctl("list", "--json", "--full", "--all").data(using: .utf8) else {
-            return [:]
-        }
+        let json = try runner.prlctlJSON("list", "--json", "--full", "--all")
 
         return try JSONDecoder().decode([CodableVM].self, from: json).reduce([String : CodableVM](), {
             var dict = $0
@@ -85,13 +83,9 @@ public struct Parallels {
     }
 
     func lookupAllVMDetails() throws -> [String: VMDetails] {
-        let json = try runner.prlctl("list", "--json", "--full", "--all", "--info")
+        let json = try runner.prlctlJSON("list", "--json", "--full", "--all", "--info")
 
-        guard let jsonData = json.data(using: .utf8) else {
-            return [:]
-        }
-
-        return try JSONDecoder().decode([VMDetails].self, from: jsonData).reduce([String: VMDetails](), {
+        return try JSONDecoder().decode([VMDetails].self, from: json).reduce([String: VMDetails](), {
             var dict = $0
             dict[$1.uuid] = $1
             return dict

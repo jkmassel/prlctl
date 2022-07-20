@@ -39,11 +39,82 @@ public struct VM: VMProtocol {
     let status: VMStatus
     let ip_configured: String
 
+    init(uuid: String, name: String, status: VMStatus, ip_configured: String) {
+        self.uuid = uuid
+        self.name = name
+        self.status = status
+        self.ip_configured = ip_configured
+    }
+    
     init(vm: CodableVM, details: VMDetails) {
         self.uuid = vm.uuid
         self.name = vm.name
         self.ip_configured = vm.ip_configured
         self.status = details.isPackage ? .packaged : vm.status
+    }
+
+    public var isStartingVM: Bool {
+        status == .starting
+    }
+
+    public func asStartingVM() -> StartingVM? {
+        guard isStartingVM else {
+            return nil
+        }
+
+        return StartingVM(uuid: uuid, name: name)
+    }
+
+    public var isStoppingVM: Bool {
+        status == .stopping
+    }
+
+    public func asStoppingVM() -> StoppingVM? {
+        guard isStoppingVM else {
+            return nil
+        }
+
+        return StoppingVM(uuid: uuid, name: name)
+    }
+}
+
+// MARK: Conversion Methods
+// These are in the same order as the sample data on the filesystem in Tests/prlctlTests/resources
+extension VM {
+    public var isInvalidVM: Bool {
+        status == .invalid
+    }
+
+    public func asInvalidVM() -> InvalidVM? {
+        guard isInvalidVM else {
+            return nil
+        }
+
+        return InvalidVM(uuid: uuid, name: name)
+    }
+
+    public var isPackagedVM: Bool {
+        status == .packaged
+    }
+
+    public func asPackagedVM() -> PackagedVM? {
+        guard isPackagedVM else {
+            return nil
+        }
+
+        return PackagedVM(uuid: uuid, name: name)
+    }
+
+    public var isResuming: Bool {
+        status == .resuming
+    }
+
+    public func asResumingVM() -> ResumingVM? {
+        guard isResuming else {
+            return nil
+        }
+
+        return ResumingVM(uuid: uuid, name: name)
     }
 
     public var isRunningVM: Bool {
@@ -70,18 +141,6 @@ public struct VM: VMProtocol {
         return StoppedVM(uuid: uuid, name: name)
     }
 
-    public var isPackagedVM: Bool {
-        status == .packaged
-    }
-
-    public func asPackagedVM() -> PackagedVM? {
-        guard isPackagedVM else {
-            return nil
-        }
-
-        return PackagedVM(uuid: uuid, name: name)
-    }
-
     public var isSuspendedVM: Bool {
         status == .suspended
     }
@@ -92,54 +151,6 @@ public struct VM: VMProtocol {
         }
 
         return SuspendedVM(uuid: uuid, name: name)
-    }
-
-    public var isInvalidVM: Bool {
-        status == .invalid
-    }
-
-    public func asInvalidVM() -> InvalidVM? {
-        guard isInvalidVM else {
-            return nil
-        }
-
-        return InvalidVM(uuid: uuid, name: name)
-    }
-
-    public var isStartingVM: Bool {
-        status == .starting
-    }
-
-    public func asStartingVM() -> StartingVM? {
-        guard isStartingVM else {
-            return nil
-        }
-
-        return StartingVM(uuid: uuid, name: name)
-    }
-
-    public var isStoppingVM: Bool {
-        status == .stopping
-    }
-
-    public func asStoppingVM() -> StoppingVM? {
-        guard isStoppingVM else {
-            return nil
-        }
-
-        return StoppingVM(uuid: uuid, name: name)
-    }
-
-    public var isResuming: Bool {
-        status == .resuming
-    }
-
-    public func asResumingVM() -> ResumingVM? {
-        guard isResuming else {
-            return nil
-        }
-
-        return ResumingVM(uuid: uuid, name: name)
     }
 }
 
@@ -203,9 +214,7 @@ public struct StoppedVM: VMProtocol {
 
     /// Retrieve a list of snapshots associated with this VM
     public func getSnapshots(runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws -> [VMSnapshot] {
-        guard let json = try runner.prlctl("snapshot-list", uuid, "--json").data(using: .utf8) else {
-            return []
-        }
+        let json = try runner.prlctlJSON("snapshot-list", uuid, "--json")
 
         return try JSONDecoder()
             .decode(CodableVMSnapshotList.self, from: json)
