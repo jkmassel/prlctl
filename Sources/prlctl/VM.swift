@@ -24,6 +24,11 @@ extension VMProtocol {
         try? runner.stopVM(handle: uuid, fast: true) // It's ok if trying to stop the VM fails – it might already be stopped
         try runner.deleteVM(handle: uuid)
     }
+
+    /// Unregister this VM from Parallels without deleting any files on disk
+    public func unregister(runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws {
+        try runner.unregisterVM(handle: uuid)
+    }
 }
 
 public struct CodableVM: VMProtocol, Codable {
