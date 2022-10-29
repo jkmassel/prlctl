@@ -36,7 +36,7 @@ public struct CodableVM: VMProtocol, Codable {
 public struct VM: VMProtocol {
     public let uuid: String
     public let name: String
-    let status: VMStatus
+    public let status: VMStatus
     let ip_configured: String
 
     init(uuid: String, name: String, status: VMStatus, ip_configured: String) {
