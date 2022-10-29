@@ -100,6 +100,12 @@ final class VMTests: XCTestCase {
         XCTAssertEqual(runner.commands.last, "prlctl delete machine-uuid")
     }
 
+    func testThatStoppedVMCanBeUnregistered() throws {
+        let runner = TestCommandRunner()
+        try StoppedVM(uuid: "machine-uuid", name: "machine-name").unregister(runner: runner)
+        XCTAssertEqual(runner.commands.last, "prlctl unregister machine-uuid")
+    }
+
     func testThatRunningVMCanBeStopped() throws {
         let runner = TestCommandRunner()
         try RunningVM(uuid: "machine-uuid", name: "machine-name", ipAddress: "127.0.0.1").shutdown(runner: runner)

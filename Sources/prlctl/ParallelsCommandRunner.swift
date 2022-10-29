@@ -27,6 +27,10 @@ extension ParallelsCommandRunner {
     func deleteVM(handle: String) throws {
         try prlctl("delete", handle)
     }
+
+    func unregisterVM(handle: String) throws {
+        try prlctl("unregister", handle)
+    }
 }
 
 public struct DefaultParallelsCommandRunner: ParallelsCommandRunner {
