@@ -17,3 +17,10 @@ jobs:
       run: swift build -v
     - name: Run tests
       run: swift test -v
+  lint:
+      name: Run Swiftlint
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+        - name: SwiftLint
+          run: make lint
