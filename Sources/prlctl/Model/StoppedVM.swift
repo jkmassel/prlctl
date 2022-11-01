@@ -66,6 +66,8 @@ public struct StoppedVM: VMProtocol {
         case sharedBluetooth(_ state: State)
         case sharedSmartcard(_ state: State)
         case isolateVM(_ state: State)
+        case withoutSoundDevice(handle: String = "sound0")
+        case withoutCDROMDevice(handle: String = "cdrom0")
     }
 
     public enum State: String {
@@ -111,6 +113,10 @@ public struct StoppedVM: VMProtocol {
             try runner.prlctl("set \(uuid) --auto-share-smart-card \(state.rawValue)")
         case .isolateVM(let state):
             try runner.prlctl("set \(uuid) --isolate-vm \(state.rawValue)")
+        case .withoutSoundDevice(let handle):
+            try runner.prlctl("set \(uuid) --device-del \(handle)")
+        case .withoutCDROMDevice(let handle):
+            try runner.prlctl("set \(uuid) --device-del \(handle)")
         }
     }
     // swiftlint:enable cyclomatic_complexity
