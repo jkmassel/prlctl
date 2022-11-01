@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-
+    name: Build and Test
     runs-on: macos-latest
 
     steps:
@@ -18,9 +18,9 @@ jobs:
     - name: Run tests
       run: swift test -v
   lint:
-      name: Run Swiftlint
+      name: SwiftLint
       runs-on: ubuntu-latest
       steps:
         - uses: actions/checkout@v2
-        - name: SwiftLint
+        - name: Lint
           run: make lint-ci
