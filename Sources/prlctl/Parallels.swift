@@ -93,7 +93,11 @@ public struct Parallels {
     }
 
     func registerVM(at url: URL) throws {
-        try runner.prlctl("register", url.path, "--preserve-uuid=no")
+        try runner.registerVM(at: url)
+    }
+
+    func unregisterVM(handle: String) throws {
+        try runner.unregisterVM(handle: handle)
     }
 
     @discardableResult

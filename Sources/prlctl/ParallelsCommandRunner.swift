@@ -28,6 +28,10 @@ extension ParallelsCommandRunner {
         try prlctl("delete", handle)
     }
 
+    func registerVM(at path: URL) throws {
+        try prlctl("register", path.path, "--preserve-uuid=no")
+    }
+
     func unregisterVM(handle: String) throws {
         try prlctl("unregister", handle)
     }

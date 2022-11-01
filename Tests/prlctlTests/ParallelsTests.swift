@@ -110,6 +110,12 @@ final class ParallelsTests: XCTestCase {
         XCTAssertEqual(runner.command, "prlctl register /dev/null --preserve-uuid=no")
     }
 
+    func testThatUnregisterVMWorks() throws {
+        let runner = TestCommandRunner()
+        try Parallels(runner: runner).unregisterVM(handle: "foo")
+        XCTAssertEqual(runner.command, "prlctl unregister foo")
+    }
+
     private func getParallelsWithTestData() throws -> Parallels {
         return Parallels(runner: TestCommandRunner(responses: [
             "prlctl list --json --full --all": try getVMList(),
