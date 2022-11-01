@@ -163,4 +163,32 @@ final class VMSettingsTests: XCTestCase {
         try vm.set(.isolateVM(.off), runner: runner)
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --isolate-vm off")
     }
+
+    func testThatWithoutSoundDeviceRemovesDefaultSoundDevice() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.withoutSoundDevice(), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --device-del sound0")
+    }
+
+    func testThatWithoutSoundDeviceSpecifyingCustomDeviceHandleRemovesCorrectSoundDevice() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.withoutSoundDevice(handle: "sound1"), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --device-del sound1")
+    }
+
+    func testThatWithoutCDROMDeviceRemovesDefaultCDROMDevice() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.withoutCDROMDevice(), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --device-del cdrom0")
+    }
+
+    func testThatWithoutCDROMDeviceSpecifyingCustomDeviceHandleRemovesCorrectSoundDevice() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.withoutCDROMDevice(handle: "cdrom1"), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --device-del cdrom1")
+    }
 }
