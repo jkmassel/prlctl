@@ -12,7 +12,7 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "prlctl",
-            targets: ["prlctl"]),
+            targets: ["prlctl"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -20,7 +20,7 @@ let package = Package(
         .package(
             url: "https://github.com/JohnSundell/ShellOut",
             from: "2.3.0"
-        ),
+        )
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -54,7 +54,7 @@ let package = Package(
                 .copy("resources/suspended-vm-details.json"),
                 .copy("resources/suspended-vm.json"),
                 .copy("resources/vm-snapshot-list-empty.json"),
-                .copy("resources/vm-snapshot-list.json"),
+                .copy("resources/vm-snapshot-list.json")
             ]
         )
     ]

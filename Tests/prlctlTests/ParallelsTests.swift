@@ -11,7 +11,7 @@ final class ParallelsTests: XCTestCase {
     func testThatLookupAllVMsIsEmptyForNoVMs() throws {
         let parallels = Parallels(runner: TestCommandRunner(responses: [
             "prlctl list --json --full --all": "[]",
-            "prlctl list --json --full --all --info": "[]",
+            "prlctl list --json --full --all --info": "[]"
         ]))
 
         XCTAssertTrue(try parallels.lookupAllVMs().isEmpty)
@@ -20,7 +20,7 @@ final class ParallelsTests: XCTestCase {
     func testThatLookupAllVMsThrowsForInvalidJSON() throws {
         let parallels = Parallels(runner: TestCommandRunner(responses: [
             "prlctl list --json --full --all": "foo",
-            "prlctl list --json --full --all --info": "[]",
+            "prlctl list --json --full --all --info": "[]"
         ]))
 
         XCTAssertThrowsError(try parallels.lookupAllVMs())
@@ -101,7 +101,10 @@ final class ParallelsTests: XCTestCase {
     func testThatLicenseActivationWorks() throws {
         let runner = TestCommandRunner()
         try Parallels(runner: runner).serviceControl.installLicense(key: "key", company: "company")
-        XCTAssertEqual(runner.command, "prlsrvctl install-license -k key --company company --activate-online-immediately")
+        XCTAssertEqual(
+            runner.command,
+            "prlsrvctl install-license -k key --company company --activate-online-immediately"
+        )
     }
 
     func testThatRegisterVMWorks() throws {
@@ -119,7 +122,7 @@ final class ParallelsTests: XCTestCase {
     private func getParallelsWithTestData() throws -> Parallels {
         return Parallels(runner: TestCommandRunner(responses: [
             "prlctl list --json --full --all": try getVMList(),
-            "prlctl list --json --full --all --info": try getVMDetails(),
+            "prlctl list --json --full --all --info": try getVMDetails()
         ]))
     }
 
@@ -131,12 +134,12 @@ final class ParallelsTests: XCTestCase {
         "running-vm-without-ip",
         "stopped-vm",
         "suspended-vm",
-        "resuming-vm",
+        "resuming-vm"
     ]
 
     private func getVMList() throws -> String {
         let vms = try testVMNames
-            .compactMap { getJSONResource(named:$0).data(using: .utf8) }
+            .compactMap { getJSONResource(named: $0).data(using: .utf8) }
             .map { try JSONDecoder().decode(CodableVM.self, from: $0) }
 
         let data = try JSONEncoder().encode(vms)
@@ -168,6 +171,18 @@ extension XCTestCase {
         }
     }
 
+    func codableVMResource(named name: String) throws -> CodableVM? {
+        try JSONDecoder().decode(CodableVM.self, from: getJSONDataForResource(named: name))
+    }
+
+    func codableVMListResource(named name: String) throws -> CodableVMSnapshotList? {
+        try JSONDecoder().decode(CodableVMSnapshotList.self, from: getJSONDataForResource(named: name))
+    }
+
+    func vmDetailsResource(named name: String) throws -> VMDetails? {
+        try JSONDecoder().decode(VMDetails.self, from: getJSONDataForResource(named: name))
+    }
+
     func getVmDataFrom(infoKey: String, detailsKey: String) -> VMTestData {
         let infoData = getJSONDataForResource(named: infoKey)
         let detailsData = getJSONDataForResource(named: detailsKey)
@@ -183,5 +198,11 @@ extension XCTestCase {
     func getJSONResource(named key: String) -> String {
         let data = getJSONDataForResource(named: key)
         return String(data: data, encoding: .utf8)!
+    }
+}
+
+extension RunningVM {
+    static var testCase: RunningVM {
+        RunningVM(uuid: "machine-uuid", name: "machine-name", ipAddress: "127.0.0.1")
     }
 }

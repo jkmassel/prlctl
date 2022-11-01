@@ -75,7 +75,7 @@ public struct Parallels {
     func lookupAllVMInfo() throws -> [String: CodableVM] {
         let json = try runner.prlctlJSON("list", "--json", "--full", "--all")
 
-        return try JSONDecoder().decode([CodableVM].self, from: json).reduce([String : CodableVM](), {
+        return try JSONDecoder().decode([CodableVM].self, from: json).reduce([String: CodableVM](), {
             var dict = $0
             dict[$1.uuid] = $1
             return dict
