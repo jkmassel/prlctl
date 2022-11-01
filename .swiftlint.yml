@@ -1,0 +1,12 @@
+included:
+  - Sources
+  - Tests
+
+identifier_name:
+  excluded:
+    - on
+    - vm
+
+type_name:
+  excluded:
+    - VM

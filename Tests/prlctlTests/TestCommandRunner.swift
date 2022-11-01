@@ -10,7 +10,7 @@ class TestCommandRunner: ParallelsCommandRunner {
     var commands: [String] = []
 
     private let defaultResponse: String
-    private let responses: [String : String]
+    private let responses: [String: String]
 
     /// Used for cases where we're only interested in the output, not the input
     init() {
