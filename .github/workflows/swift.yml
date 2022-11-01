@@ -23,4 +23,4 @@ jobs:
       steps:
         - uses: actions/checkout@v2
         - name: SwiftLint
-          run: make lint
+          run: make lint-ci
