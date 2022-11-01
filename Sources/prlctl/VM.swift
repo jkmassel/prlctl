@@ -238,6 +238,19 @@ public struct StoppedVM: VMProtocol {
         case memorySize(_ megabytes: Int)
         case hypervisorType(_ type: HypervisorType)
         case networkType(_ type: NetworkType, interface: String = "net0")
+        case smartMount(_ state: State)
+        case sharedClipboard(_ state: State)
+        case sharedCloud(_ state: State)
+        case sharedProfile(_ state: State)
+        case sharedCamera(_ state: State)
+        case sharedBluetooth(_ state: State)
+        case sharedSmartcard(_ state: State)
+        case isolateVM(_ state: State)
+    }
+
+    public enum State: String {
+        case on
+        case off
     }
 
     public enum HypervisorType: String {
@@ -253,14 +266,30 @@ public struct StoppedVM: VMProtocol {
 
     public func set(_ option: VMOption, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws {
         switch option {
-            case .cpuCount(let newCount):
-                try runner.prlctl("set \(uuid) --cpus \(newCount)")
-            case .memorySize(let megabytes):
-                try runner.prlctl("set \(uuid) --memsize \(megabytes)")
-            case .hypervisorType(let type):
-                try runner.prlctl("set \(uuid) --hypervisor-type \(type)")
-            case .networkType(let type, let interface):
-                try runner.prlctl("set \(uuid) --device-set \(interface) --type \(type.rawValue)")
+        case .cpuCount(let newCount):
+            try runner.prlctl("set \(uuid) --cpus \(newCount)")
+        case .memorySize(let megabytes):
+            try runner.prlctl("set \(uuid) --memsize \(megabytes)")
+        case .hypervisorType(let type):
+            try runner.prlctl("set \(uuid) --hypervisor-type \(type)")
+        case .networkType(let type, let interface):
+            try runner.prlctl("set \(uuid) --device-set \(interface) --type \(type.rawValue)")
+        case .smartMount(let state):
+            try runner.prlctl("set \(uuid) --smart-mount \(state.rawValue)")
+        case .sharedClipboard(let state):
+            try runner.prlctl("set \(uuid) --shared-clipboard \(state.rawValue)")
+        case .sharedCloud(let state):
+            try runner.prlctl("set \(uuid) --shared-cloud \(state.rawValue)")
+        case .sharedProfile(let state):
+            try runner.prlctl("set \(uuid) --shared-profile \(state.rawValue)")
+        case .sharedCamera(let state):
+            try runner.prlctl("set \(uuid) --auto-share-camera \(state.rawValue)")
+        case .sharedBluetooth(let state):
+            try runner.prlctl("set \(uuid) --auto-share-bluetooth \(state.rawValue)")
+        case .sharedSmartcard(let state):
+            try runner.prlctl("set \(uuid) --auto-share-smart-card \(state.rawValue)")
+        case .isolateVM(let state):
+            try runner.prlctl("set \(uuid) --isolate-vm \(state.rawValue)")
         }
     }
 }
