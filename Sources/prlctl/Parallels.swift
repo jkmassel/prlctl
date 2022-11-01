@@ -96,6 +96,10 @@ public struct Parallels {
         try runner.prlctl("register", url.path, "--preserve-uuid=no")
     }
 
+    func unregisterVM(handle: String) throws {
+        try runner.unregisterVM(handle: handle)
+    }
+
     @discardableResult
     public func importVM(at url: URL) throws -> VM? {
         let previousVMs = try lookupAllVMs()
