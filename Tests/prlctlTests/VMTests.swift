@@ -136,7 +136,7 @@ final class VMTests: XCTestCase {
         XCTAssertEqual(runner.command, "prlctl exec machine-uuid su - 'my user' -c 'ls'")
 
     }
-    
+
     func testThatVMDetailsCanBeParsed() throws {
         let json = getJSONDataForResource(named: "packaged-vm-details")
         let vm = try XCTUnwrap(JSONDecoder().decode(VMDetails.self, from: json))
@@ -161,7 +161,7 @@ final class VMTests: XCTestCase {
         _ = try vm.getSnapshots(runner: runner)
         XCTAssertEqual(runner.command, "prlctl snapshot-list uuid --json")
     }
-    
+
     func testThatSnapshotListWorks() throws {
         let runner = TestCommandRunner(response: getJSONResource(named: "vm-snapshot-list"))
         let vmList = try StoppedVM(uuid: "machine-uuid", name: "machine-name").getSnapshots(runner: runner)
@@ -236,6 +236,118 @@ final class VMTests: XCTestCase {
         let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
         try vm.set(.networkType(.hostOnly), runner: runner)
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --device-set net0 --type host-only")
+    }
+
+    func testThatSetSmartMountToOnWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.smartMount(.on), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --smart-mount on")
+    }
+
+    func testThatSetSmartMountToOffWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.smartMount(.off), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --smart-mount off")
+    }
+
+    func testThatSetSharedClipboardToOnWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.sharedClipboard(.on), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --shared-clipboard on")
+    }
+
+    func testThatSetSharedClipboardToOffWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.sharedClipboard(.off), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --shared-clipboard off")
+    }
+
+    func testThatSetSharedCloudToOnWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.sharedCloud(.on), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --shared-cloud on")
+    }
+
+    func testThatSetSharedCloudToOffWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.sharedCloud(.off), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --shared-cloud off")
+    }
+
+    func testThatSetSharedProfileToOnWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.sharedProfile(.on), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --shared-profile on")
+    }
+
+    func testThatSetSharedProfileToOffWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.sharedProfile(.off), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --shared-profile off")
+    }
+
+    func testThatSetSharedCameraToOnWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.sharedCamera(.on), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --auto-share-camera on")
+    }
+
+    func testThatSetSharedCameraToOffWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.sharedCamera(.off), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --auto-share-camera off")
+    }
+
+    func testThatSetSharedBluetoothToOnWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.sharedBluetooth(.on), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --auto-share-bluetooth on")
+    }
+
+    func testThatSetSharedBluetoothToOffWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.sharedBluetooth(.off), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --auto-share-bluetooth off")
+    }
+
+    func testThatSetSharedSmartcardToOnWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.sharedSmartcard(.on), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --auto-share-smart-card on")
+    }
+
+    func testThatSetSharedSmartcardToOffWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.sharedSmartcard(.off), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --auto-share-smart-card off")
+    }
+
+    func testThatSetVMisolationToOnWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.isolateVM(.on), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --isolate-vm on")
+    }
+
+    func testThatSetVMisolationToOffWorks() throws {
+        let runner = TestCommandRunner()
+        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
+        try vm.set(.isolateVM(.off), runner: runner)
+        XCTAssertEqual(runner.command, "prlctl set machine-uuid --isolate-vm off")
     }
 
     func testThatVMEqualityIsBasedOnUUID() throws {
