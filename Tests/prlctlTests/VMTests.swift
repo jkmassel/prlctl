@@ -191,6 +191,15 @@ final class VMTests: XCTestCase {
         )
     }
 
+    func testThatVMRenameWorks() throws {
+        let runner = TestCommandRunner()
+        try StoppedVM(uuid: "machine-uuid", name: "machine-name").rename(to: "new-vm-name", runner: runner)
+        XCTAssertEqual(
+            runner.commands.last,
+            "prlctl set machine-uuid --name new-vm-name"
+        )
+    }
+
     func testThatVMEqualityIsBasedOnUUID() throws {
         let vm1 = VM(uuid: "uuid", name: "name 1", status: .stopped, ipAddress: "127.0.0.1")
         let vm2 = VM(uuid: "uuid", name: "name 2", status: .stopped, ipAddress: "127.0.0.1")
