@@ -53,6 +53,13 @@ public struct StoppedVM: VMProtocol {
         try runner.prlctl("snapshot-delete", uuid, "-i", snapshot.uuid)
     }
 
+    /// Rename the VM to the given `name`
+    ///
+    /// This will persistently change the name inside of the Parallels VM bundle
+    public func rename(to name: String, runner: ParallelsCommandRunner = .default) throws {
+        try runner.prlctl("set \(uuid) --name \(name)")
+    }
+
     public enum VMOption {
         case cpuCount(_ newCount: Int)
         case memorySize(_ megabytes: Int)
