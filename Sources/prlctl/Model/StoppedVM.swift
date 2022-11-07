@@ -10,8 +10,12 @@ public struct StoppedVM: VMProtocol {
     }
 
     /// Start the VM
-    public func start(runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws {
-        try runner.prlctl("start", uuid, "--wait")
+    public func start(wait: Bool = true, runner: ParallelsCommandRunner = DefaultParallelsCommandRunner()) throws {
+        if wait {
+            try runner.prlctl("start", uuid, "--wait")
+        } else {
+            try runner.prlctl("start", uuid)
+        }
     }
 
     /// Clone the VM

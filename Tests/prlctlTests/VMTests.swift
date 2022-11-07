@@ -76,10 +76,16 @@ final class VMTests: XCTestCase {
         XCTAssertNotNil(vm.asSuspendedVM())
     }
 
-    func testThatStoppedVMCanBeStarted() throws {
+    func testThatStoppedVMCanBeStartedWithWait() throws {
         let runner = TestCommandRunner()
-        try StoppedVM(uuid: "machine-uuid", name: "machine-name").start(runner: runner)
+        try StoppedVM(uuid: "machine-uuid", name: "machine-name").start(wait: true, runner: runner)
         XCTAssertEqual(runner.command, "prlctl start machine-uuid --wait")
+    }
+
+    func testThatStoppedVMCanBeStartedWithoutWait() throws {
+        let runner = TestCommandRunner()
+        try StoppedVM(uuid: "machine-uuid", name: "machine-name").start(wait: false, runner: runner)
+        XCTAssertEqual(runner.command, "prlctl start machine-uuid")
     }
 
     func testThatStoppedVMCanBeCloned() throws {
