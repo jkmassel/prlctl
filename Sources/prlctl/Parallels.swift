@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Parallels {
+public actor Parallels {
 
     private let runner: ParallelsCommandRunner
 
@@ -8,7 +8,7 @@ public struct Parallels {
         self.init(runner: DefaultParallelsCommandRunner())
     }
 
-    public init(runner: ParallelsCommandRunner) {
+    init(runner: ParallelsCommandRunner) {
         self.runner = runner
         self.serviceControl = ParallelsService(runner: runner)
     }
@@ -16,17 +16,7 @@ public struct Parallels {
     let serviceControl: ParallelsService
 
     public func lookupAllVMs() throws -> [VM] {
-
-        let info    = try lookupAllVMInfo()
-        let details = try lookupAllVMDetails()
-
-        return info.compactMap {
-            guard let vmDetails = details[$0.key] else {
-                return nil
-            }
-
-            return VM(vm: $0.value, details: vmDetails)
-        }
+        try self.runner.lookupAllVMs()
     }
 
     public func lookupRunningVMs() throws -> [RunningVM] {
@@ -65,38 +55,85 @@ public struct Parallels {
     }
 
     public func lookupVM(named handle: String) throws -> VM? {
-        guard let vm = try lookupAllVMs().filter({ $0.uuid == handle || $0.name == handle }).first else {
-            return nil
+        try self.runner.lookupVM(named: handle)
+    }
+
+    /// Start the VM with the given handle (name or UUID)
+    ///
+    public func startVM(withHandle handle: String, wait: Bool = true) throws {
+        try self.runner.startVM(handle: handle, wait: wait)
+    }
+
+    /// Shutdown the VM with the given handle (name or UUID)
+    ///
+    public func shutdownVM(withHandle handle: String, immediately: Bool = false) throws {
+        try self.runner.stopVM(handle: handle, fast: immediately)
+    }
+
+    /// Clone the VM with the given handle (name or UUID)
+    ///
+    /// - Parameters:
+    ///     - as: The name to use for the new VM
+    ///     - fast: Whether to use the Parallels linked clone feature to speed up VM cloning (on by default)
+    public func cloneVM(withHandle handle: String, `as` newName: String, fast: Bool = true) throws {
+        try self.runner.cloneVM(handle: handle, newName: newName, fast: fast)
+    }
+
+    public func unpackVM(withHandle handle: String) throws {
+        try runner.unpackVM(handle: handle)
+    }
+
+    @discardableResult
+    public func runCommand(
+        _ command: String,
+        onVirtualMachineWithHandle handle: String,
+        as user: User = .root
+    ) throws -> String {
+        var internalCommand = command
+
+        if user != .root {
+            internalCommand = "su - '\(user.name)' -c '\(command)'"
         }
 
-        return vm
+        return try self.runner.runCommandOnVM(handle: handle, command: internalCommand)
     }
 
-    func lookupAllVMInfo() throws -> [String: CodableVM] {
-        let json = try runner.prlctlJSON("list", "--json", "--full", "--all")
-
-        return try JSONDecoder().decode([CodableVM].self, from: json).reduce([String: CodableVM](), {
-            var dict = $0
-            dict[$1.uuid] = $1
-            return dict
-        })
+    /// Clean up the VM by removing all snapshots.
+    ///
+    /// Snapshots are created by running `clone` in `fast` mode – they need to be cleaned because
+    /// otherwise they can take up a lot of disk space.
+    public func cleanVM(withHandle handle: String) throws {
+        try runner.deleteAllSnapshots(handle: handle)
     }
 
-    func lookupAllVMDetails() throws -> [String: VMDetails] {
-        let json = try runner.prlctlJSON("list", "--json", "--full", "--all", "--info")
-
-        return try JSONDecoder().decode([VMDetails].self, from: json).reduce([String: VMDetails](), {
-            var dict = $0
-            dict[$1.uuid] = $1
-            return dict
-        })
+    public func renameVM(withHandle handle: String, to newName: String) throws {
+        try runner.renameVM(handle: handle, newName: newName)
     }
 
-    func registerVM(at url: URL) throws {
+    public func setVMOption(_ option: VMOption, onVirtualMachineWithHandle handle: String) throws {
+        try runner.setVMOption(handle: handle, option: option)
+    }
+
+    /// Retrieve a list of snapshots associated with this VM
+    public func getSnapshotsForVM(withHandle handle: String) throws -> [VMSnapshot] {
+        try runner.getSnapshots(handle: handle)
+    }
+
+    /// Delete the given snapshot object from this VM
+    public func deleteSnapshot(_ snapshot: VMSnapshot) throws {
+        try runner.deleteSnapshot(snapshot)
+    }
+
+    public func registerVM(at url: URL) throws {
         try runner.registerVM(at: url)
     }
 
+    @available(*, deprecated, message: "Deprecated for API naming alignment", renamed: "unregisterVM(named:)")
     func unregisterVM(handle: String) throws {
+        try runner.unregisterVM(handle: handle)
+    }
+
+    public func unregisterVM(named handle: String) throws {
         try runner.unregisterVM(handle: handle)
     }
 

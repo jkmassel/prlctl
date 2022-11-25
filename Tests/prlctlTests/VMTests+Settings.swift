@@ -3,192 +3,192 @@ import XCTest
 
 final class VMSettingsTests: XCTestCase {
 
-    func testThatSetCPUCountWorks() throws {
+    func testThatSetCPUCountWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.cpuCount(24), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.cpuCount(24), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --cpus 24")
     }
 
-    func testThatSetMemorySizeWorks() throws {
+    func testThatSetMemorySizeWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.memorySize(8192), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.memorySize(8192), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --memsize 8192")
     }
 
-    func testThatSetHypervisorTypeToParallelsWorks() throws {
+    func testThatSetHypervisorTypeToParallelsWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.hypervisorType(.parallels), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.hypervisorType(.parallels), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --hypervisor-type parallels")
     }
 
-    func testThatSetHypervisorTypeToAppleWorks() throws {
+    func testThatSetHypervisorTypeToAppleWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.hypervisorType(.apple), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.hypervisorType(.apple), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --hypervisor-type apple")
     }
 
-    func testThatSetNetworkInterfaceTypeToSharedWorks() throws {
+    func testThatSetNetworkInterfaceTypeToSharedWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.networkType(.shared), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.networkType(.shared), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --device-set net0 --type shared")
     }
 
-    func testThatSetNetworkInterfaceTypeToBridgedWorks() throws {
+    func testThatSetNetworkInterfaceTypeToBridgedWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.networkType(.bridged), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.networkType(.bridged), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --device-set net0 --type bridged")
     }
 
-    func testThatSetNetworkInterfaceTypeToHostOnlyWorks() throws {
+    func testThatSetNetworkInterfaceTypeToHostOnlyWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.networkType(.hostOnly), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.networkType(.hostOnly), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --device-set net0 --type host-only")
     }
 
-    func testThatSetSmartMountToOnWorks() throws {
+    func testThatSetSmartMountToOnWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.smartMount(.on), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.smartMount(.on), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --smart-mount on")
     }
 
-    func testThatSetSmartMountToOffWorks() throws {
+    func testThatSetSmartMountToOffWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.smartMount(.off), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.smartMount(.off), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --smart-mount off")
     }
 
-    func testThatSetSharedClipboardToOnWorks() throws {
+    func testThatSetSharedClipboardToOnWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.sharedClipboard(.on), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.sharedClipboard(.on), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --shared-clipboard on")
     }
 
-    func testThatSetSharedClipboardToOffWorks() throws {
+    func testThatSetSharedClipboardToOffWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.sharedClipboard(.off), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.sharedClipboard(.off), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --shared-clipboard off")
     }
 
-    func testThatSetSharedCloudToOnWorks() throws {
+    func testThatSetSharedCloudToOnWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.sharedCloud(.on), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.sharedCloud(.on), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --shared-cloud on")
     }
 
-    func testThatSetSharedCloudToOffWorks() throws {
+    func testThatSetSharedCloudToOffWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.sharedCloud(.off), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.sharedCloud(.off), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --shared-cloud off")
     }
 
-    func testThatSetSharedProfileToOnWorks() throws {
+    func testThatSetSharedProfileToOnWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.sharedProfile(.on), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.sharedProfile(.on), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --shared-profile on")
     }
 
-    func testThatSetSharedProfileToOffWorks() throws {
+    func testThatSetSharedProfileToOffWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.sharedProfile(.off), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.sharedProfile(.off), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --shared-profile off")
     }
 
-    func testThatSetSharedCameraToOnWorks() throws {
+    func testThatSetSharedCameraToOnWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.sharedCamera(.on), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.sharedCamera(.on), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --auto-share-camera on")
     }
 
-    func testThatSetSharedCameraToOffWorks() throws {
+    func testThatSetSharedCameraToOffWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.sharedCamera(.off), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.sharedCamera(.off), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --auto-share-camera off")
     }
 
-    func testThatSetSharedBluetoothToOnWorks() throws {
+    func testThatSetSharedBluetoothToOnWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.sharedBluetooth(.on), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.sharedBluetooth(.on), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --auto-share-bluetooth on")
     }
 
-    func testThatSetSharedBluetoothToOffWorks() throws {
+    func testThatSetSharedBluetoothToOffWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.sharedBluetooth(.off), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.sharedBluetooth(.off), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --auto-share-bluetooth off")
     }
 
-    func testThatSetSharedSmartcardToOnWorks() throws {
+    func testThatSetSharedSmartcardToOnWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.sharedSmartcard(.on), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.sharedSmartcard(.on), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --auto-share-smart-card on")
     }
 
-    func testThatSetSharedSmartcardToOffWorks() throws {
+    func testThatSetSharedSmartcardToOffWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.sharedSmartcard(.off), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.sharedSmartcard(.off), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --auto-share-smart-card off")
     }
 
-    func testThatSetVMisolationToOnWorks() throws {
+    func testThatSetVMisolationToOnWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.isolateVM(.on), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.isolateVM(.on), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --isolate-vm on")
     }
 
-    func testThatSetVMisolationToOffWorks() throws {
+    func testThatSetVMisolationToOffWorks() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.isolateVM(.off), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.isolateVM(.off), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --isolate-vm off")
     }
 
-    func testThatWithoutSoundDeviceRemovesDefaultSoundDevice() throws {
+    func testThatWithoutSoundDeviceRemovesDefaultSoundDevice() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.withoutSoundDevice(), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.withoutSoundDevice(), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --device-del sound0")
     }
 
-    func testThatWithoutSoundDeviceSpecifyingCustomDeviceHandleRemovesCorrectSoundDevice() throws {
+    func testThatWithoutSoundDeviceSpecifyingCustomDeviceHandleRemovesCorrectSoundDevice() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.withoutSoundDevice(handle: "sound1"), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.withoutSoundDevice(handle: "sound1"), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --device-del sound1")
     }
 
-    func testThatWithoutCDROMDeviceRemovesDefaultCDROMDevice() throws {
+    func testThatWithoutCDROMDeviceRemovesDefaultCDROMDevice() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.withoutCDROMDevice(), runner: runner)
+            try await Parallels(runner: runner)
+            .setVMOption(.withoutCDROMDevice(), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --device-del cdrom0")
     }
 
-    func testThatWithoutCDROMDeviceSpecifyingCustomDeviceHandleRemovesCorrectSoundDevice() throws {
+    func testThatWithoutCDROMDeviceSpecifyingCustomDeviceHandleRemovesCorrectSoundDevice() async throws {
         let runner = TestCommandRunner()
-        let vm = StoppedVM(uuid: "machine-uuid", name: "machine-name")
-        try vm.set(.withoutCDROMDevice(handle: "cdrom1"), runner: runner)
+        try await Parallels(runner: runner)
+            .setVMOption(.withoutCDROMDevice(handle: "cdrom1"), onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl set machine-uuid --device-del cdrom1")
     }
 }

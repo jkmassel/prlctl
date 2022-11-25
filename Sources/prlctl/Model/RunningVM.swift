@@ -24,26 +24,4 @@ public struct RunningVM: VMProtocol {
     public var hasIpV6Address: Bool {
         IPv6Address(ipAddress) != nil
     }
-
-    public func shutdown(
-        immediately: Bool = false,
-        runner: ParallelsCommandRunner = .default
-    ) throws {
-        try runner.stopVM(handle: uuid, fast: immediately)
-    }
-
-    @discardableResult
-    public func runCommand(
-        _ command: String,
-        as user: User = .root,
-        runner: ParallelsCommandRunner = .default
-    ) throws -> String {
-        var internalCommand = command
-
-        if user != .root {
-            internalCommand = "su - '\(user.name)' -c '\(command)'"
-        }
-
-        return try runner.prlctl("exec", self.uuid, internalCommand)
-    }
 }

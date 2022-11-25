@@ -1,0 +1,8 @@
+[
+    {
+        "uuid": "machine-uuid",
+        "status": "stopped",
+        "ip_configured": "-",
+        "name": "machine-name"
+    }
+]

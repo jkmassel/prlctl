@@ -76,69 +76,59 @@ final class VMTests: XCTestCase {
         XCTAssertNotNil(vm.asSuspendedVM())
     }
 
-    func testThatStoppedVMCanBeStartedWithWait() throws {
+    func testThatStoppedVMCanBeStartedWithWait() async throws {
         let runner = TestCommandRunner()
-        try StoppedVM(uuid: "machine-uuid", name: "machine-name").start(wait: true, runner: runner)
+        try await Parallels(runner: runner).startVM(withHandle: "machine-uuid", wait: true)
         XCTAssertEqual(runner.command, "prlctl start machine-uuid --wait")
     }
 
-    func testThatStoppedVMCanBeStartedWithoutWait() throws {
+    func testThatStoppedVMCanBeStartedWithoutWait() async throws {
         let runner = TestCommandRunner()
-        try StoppedVM(uuid: "machine-uuid", name: "machine-name").start(wait: false, runner: runner)
+        try await Parallels(runner: runner).startVM(withHandle: "machine-uuid", wait: false)
         XCTAssertEqual(runner.command, "prlctl start machine-uuid")
     }
 
-    func testThatStoppedVMCanBeCloned() throws {
+    func testThatStoppedVMCanBeCloned() async throws {
         let runner = TestCommandRunner()
-        try StoppedVM(uuid: "machine-uuid", name: "machine-name").clone(as: "new-machine", runner: runner)
+        try await Parallels(runner: runner).cloneVM(withHandle: "machine-uuid", as: "new-machine", fast: true)
         XCTAssertEqual(runner.command, "prlctl clone machine-uuid --name new-machine --linked")
     }
 
-    func testThatStoppedVMCanBeDeepCloned() throws {
+    func testThatStoppedVMCanBeDeepCloned() async throws {
         let runner = TestCommandRunner()
-        try StoppedVM(uuid: "machine-uuid", name: "machine-name").clone(as: "new-machine", fast: false, runner: runner)
+        try await Parallels(runner: runner).cloneVM(withHandle: "machine-uuid", as: "new-machine", fast: false)
         XCTAssertEqual(runner.command, "prlctl clone machine-uuid --name new-machine")
     }
 
-    func testThatStoppedVMCanBeDeleted() throws {
+    func testThatRunningVMCanBeStopped() async throws {
         let runner = TestCommandRunner()
-        try StoppedVM(uuid: "machine-uuid", name: "machine-name").delete(runner: runner)
-        XCTAssertEqual(runner.commands.last, "prlctl delete machine-uuid")
-    }
-
-    func testThatStoppedVMCanBeUnregistered() throws {
-        let runner = TestCommandRunner()
-        try StoppedVM(uuid: "machine-uuid", name: "machine-name").unregister(runner: runner)
-        XCTAssertEqual(runner.commands.last, "prlctl unregister machine-uuid")
-    }
-
-    func testThatRunningVMCanBeStopped() throws {
-        let runner = TestCommandRunner()
-        try RunningVM.testCase.shutdown(runner: runner)
+        try await Parallels(runner: runner).shutdownVM(withHandle: "machine-uuid", immediately: false)
         XCTAssertEqual(runner.command, "prlctl stop machine-uuid")
     }
 
-    func testThatRunningVMCanBeStoppedImmediately() throws {
+    func testThatRunningVMCanBeStoppedImmediately() async throws {
         let runner = TestCommandRunner()
-        try RunningVM.testCase.shutdown(immediately: true, runner: runner)
+        try await Parallels(runner: runner).shutdownVM(withHandle: "machine-uuid", immediately: true)
         XCTAssertEqual(runner.command, "prlctl stop machine-uuid --fast")
     }
 
-    func testThatRunningVMCanPerformCommandsAsRoot() throws {
+    func testThatRunningVMCanPerformCommandsAsRoot() async throws {
         let runner = TestCommandRunner()
-        try RunningVM.testCase.runCommand("ls", runner: runner)
+        try await Parallels(runner: runner).runCommand("ls", onVirtualMachineWithHandle: "machine-uuid")
         XCTAssertEqual(runner.command, "prlctl exec machine-uuid ls")
     }
 
-    func testThatRunningVMCanPerformCommandsAsAnyUser() throws {
+    func testThatRunningVMCanPerformCommandsAsAnyUser() async throws {
         let runner = TestCommandRunner()
-        try RunningVM.testCase.runCommand("ls", as: User(named: "user"), runner: runner)
+        let user = User(named: "user")
+        try await Parallels(runner: runner).runCommand("ls", onVirtualMachineWithHandle: "machine-uuid", as: user)
         XCTAssertEqual(runner.command, "prlctl exec machine-uuid su - 'user' -c 'ls'")
     }
 
-    func testThatRunningVMCanPerformCommandsWithEscapedUsername() throws {
+    func testThatRunningVMCanPerformCommandsWithEscapedUsername() async throws {
         let runner = TestCommandRunner()
-        try RunningVM.testCase.runCommand("ls", as: User(named: "my user"), runner: runner)
+        let user = User(named: "my user")
+        try await Parallels(runner: runner).runCommand("ls", onVirtualMachineWithHandle: "machine-uuid", as: user)
         XCTAssertEqual(runner.command, "prlctl exec machine-uuid su - 'my user' -c 'ls'")
     }
 
@@ -160,46 +150,56 @@ final class VMTests: XCTestCase {
         XCTAssertEqual(vmList.count, 1)
     }
 
-    func testThatSnapshotListCommandIsCorrect() throws {
+    func testThatSnapshotListCommandIsCorrect() async throws {
         let runner = TestCommandRunner(response: "{}")
-        let vm = StoppedVM(uuid: "uuid", name: "name")
-        _ = try vm.getSnapshots(runner: runner)
-        XCTAssertEqual(runner.command, "prlctl snapshot-list uuid --json")
+        _ = try await Parallels(runner: runner).getSnapshotsForVM(withHandle: "machine-uuid")
+        XCTAssertEqual(runner.command, "prlctl snapshot-list machine-uuid --json")
     }
 
-    func testThatSnapshotListWorks() throws {
-        let runner = TestCommandRunner(response: getJSONResource(named: "vm-snapshot-list"))
-        let vmList = try StoppedVM(uuid: "machine-uuid", name: "machine-name").getSnapshots(runner: runner)
+    func testThatSnapshotListWorks() async throws {
+        let runner = TestCommandRunner(responses: [
+            "prlctl snapshot-list stopped-vm --json": getJSONResource(named: "vm-snapshot-list"),
+            "prlctl list --json --full --all": "[" + getJSONResource(named: "stopped-vm") + "]",
+            "prlctl list --json --full --all --info": "[" + getJSONResource(named: "stopped-vm-details") + "]"
+        ])
+
+        let vmList = try await Parallels(runner: runner).getSnapshotsForVM(withHandle: "stopped-vm")
         XCTAssertEqual(vmList.count, 1)
         XCTAssertEqual(vmList.first?.uuid, "{64d481bb-ce04-45b1-8328-49e4e4c43ddf}")
         XCTAssertEqual(vmList.first?.name, "Snapshot for linked clone")
     }
 
-    func testThatEmptySnapshotListReturnsEmptyArray() throws {
-        let runner = TestCommandRunner(response: getJSONResource(named: "vm-snapshot-list-empty"))
-        let vmList = try StoppedVM(uuid: "machine-uuid", name: "machine-name").getSnapshots(runner: runner)
+    func testThatEmptySnapshotListReturnsEmptyArray() async throws {
+        let runner = TestCommandRunner(response: "{}")
+        let vmList = try await Parallels(runner: runner).getSnapshotsForVM(withHandle: "machine-uuid")
         XCTAssertTrue(vmList.isEmpty)
     }
 
-    func testThatDeleteSnapshotWorks() throws {
+    func testThatDeleteSnapshotWorks() async throws {
         let runner = TestCommandRunner()
-        let snapshot = VMSnapshot(uuid: "snapshot-id", name: "snapshot-name")
-        try StoppedVM(uuid: "machine-uuid", name: "machine-name").deleteSnapshot(snapshot, runner: runner)
+        let snapshot = VMSnapshot(uuid: "snapshot-id", name: "snapshot-name", virtualMachineHandle: "machine-uuid")
+        try await Parallels(runner: runner).deleteSnapshot(snapshot)
         XCTAssertEqual(runner.command, "prlctl snapshot-delete machine-uuid -i snapshot-id")
     }
 
-    func testThatCleanWorks() throws {
-        let runner = TestCommandRunner(response: getJSONResource(named: "vm-snapshot-list"))
-        try StoppedVM(uuid: "machine-uuid", name: "machine-name").clean(runner: runner)
+    func testThatCleanWorks() async throws {
+        let runner = TestCommandRunner(responses: [
+            "prlctl snapshot-list stopped-vm --json": getJSONResource(named: "vm-snapshot-list"),
+            "prlctl list --json --full --all": "[" + getJSONResource(named: "stopped-vm") + "]",
+            "prlctl list --json --full --all --info": "[" + getJSONResource(named: "stopped-vm-details") + "]",
+            "prlctl snapshot-delete 83193991-61FE-4FF7-93A9-6B51D9531F67 -i {64d481bb-ce04-45b1-8328-49e4e4c43ddf}": ""
+        ])
+
+        try await Parallels(runner: runner).cleanVM(withHandle: "stopped-vm")
         XCTAssertEqual(
             runner.commands.last,
-            "prlctl snapshot-delete machine-uuid -i {64d481bb-ce04-45b1-8328-49e4e4c43ddf}"
+            "prlctl snapshot-delete 83193991-61FE-4FF7-93A9-6B51D9531F67 -i {64d481bb-ce04-45b1-8328-49e4e4c43ddf}"
         )
     }
 
-    func testThatVMRenameWorks() throws {
+    func testThatVMRenameWorks() async throws {
         let runner = TestCommandRunner()
-        try StoppedVM(uuid: "machine-uuid", name: "machine-name").rename(to: "new-vm-name", runner: runner)
+        try await Parallels(runner: runner).renameVM(withHandle: "machine-uuid", to: "new-vm-name")
         XCTAssertEqual(
             runner.commands.last,
             "prlctl set machine-uuid --name new-vm-name"

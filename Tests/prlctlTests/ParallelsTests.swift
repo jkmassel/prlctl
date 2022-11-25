@@ -8,114 +8,126 @@ extension String: LocalizedError {
 
 final class ParallelsTests: XCTestCase {
 
-    func testThatLookupAllVMsIsEmptyForNoVMs() throws {
+    func testThatLookupAllVMsIsEmptyForNoVMs() async throws {
         let parallels = Parallels(runner: TestCommandRunner(responses: [
             "prlctl list --json --full --all": "[]",
             "prlctl list --json --full --all --info": "[]"
         ]))
 
-        XCTAssertTrue(try parallels.lookupAllVMs().isEmpty)
+        let result = try await parallels.lookupAllVMs()
+        XCTAssertTrue(result.isEmpty)
     }
 
-    func testThatLookupAllVMsThrowsForInvalidJSON() throws {
+    func testThatLookupAllVMsThrowsForInvalidJSON() async throws {
         let parallels = Parallels(runner: TestCommandRunner(responses: [
             "prlctl list --json --full --all": "foo",
             "prlctl list --json --full --all --info": "[]"
         ]))
 
-        XCTAssertThrowsError(try parallels.lookupAllVMs())
+        do {
+            _ = try await parallels.lookupAllVMs()
+            XCTFail("There should be an error looking up VMs")
+        } catch {
+            XCTAssertNotNil(error)
+        }
     }
 
-    func testThatInvalidVMsCanBeLookedUp() throws {
+    func testThatInvalidVMsCanBeLookedUp() async throws {
         let parallels = try getParallelsWithTestData()
-        XCTAssertEqual(1, try parallels.lookupInvalidVMs().count)
+        let result = try await parallels.lookupInvalidVMs()
+        XCTAssertEqual(1, result.count)
     }
 
-    func testThatPackagedVMsCanBeLookedUp() throws {
+    func testThatPackagedVMsCanBeLookedUp() async throws {
         let parallels = try getParallelsWithTestData()
-        XCTAssertEqual(1, try parallels.lookupPackagedVMs().count)
+        let result = try await parallels.lookupPackagedVMs()
+        XCTAssertEqual(1, result.count)
     }
 
-    func testThatResumingVMsCanBeLookedUp() throws {
+    func testThatResumingVMsCanBeLookedUp() async throws {
         let parallels = try getParallelsWithTestData()
-        XCTAssertEqual(1, try parallels.lookupResumingVMs().count)
+        let result = try await parallels.lookupResumingVMs()
+        XCTAssertEqual(1, result.count)
     }
 
-    func testThatRunningVMsCanBeLookedUp() throws {
+    func testThatRunningVMsCanBeLookedUp() async throws {
         let parallels = try getParallelsWithTestData()
-        XCTAssertEqual(3, try parallels.lookupRunningVMs().count)
+        let result = try await parallels.lookupRunningVMs()
+        XCTAssertEqual(3, result.count)
     }
 
-    func testThatStoppedVMsCanBeLookedUp() throws {
+    func testThatStoppedVMsCanBeLookedUp() async throws {
         let parallels = try getParallelsWithTestData()
-        XCTAssertEqual(1, try parallels.lookupStoppedVMs().count)
+        let result = try await parallels.lookupStoppedVMs()
+        XCTAssertEqual(1, result.count)
     }
 
-    func testThatSuspendedVMsCanBeLookedUp() throws {
+    func testThatSuspendedVMsCanBeLookedUp() async throws {
         let parallels = try getParallelsWithTestData()
-        XCTAssertEqual(1, try parallels.lookupSuspendedVMs().count)
+        let result = try await parallels.lookupSuspendedVMs()
+        XCTAssertEqual(1, result.count)
     }
 
-    func testThatLookupVMReturnsNilForInvalidHandle() throws {
+    func testThatLookupVMReturnsNilForInvalidHandle() async throws {
         let parallels = try getParallelsWithTestData()
-        let vm = try parallels.lookupVM(named: "invalid-vm-handle")
+        let vm = try await parallels.lookupVM(named: "invalid-vm-handle")
         XCTAssertNil(vm)
     }
 
-    func testThatLookupVMReturnsPackagedVM() throws {
+    func testThatLookupVMReturnsPackagedVM() async throws {
         let parallels = try getParallelsWithTestData()
-        let vm = try parallels.lookupVM(named: "packaged-vm")
+        let vm = try await parallels.lookupVM(named: "packaged-vm")
         XCTAssertNotNil(vm?.asPackagedVM())
     }
 
-    func testThatLookupVMReturnsResumingVM() throws {
+    func testThatLookupVMReturnsResumingVM() async throws {
         let parallels = try getParallelsWithTestData()
-        let vm = try parallels.lookupVM(named: "resuming-vm")
+        let vm = try await parallels.lookupVM(named: "resuming-vm")
         XCTAssertNotNil(vm?.asResumingVM())
     }
 
-    func testThatLookupVMReturnsRunningVM() throws {
+    func testThatLookupVMReturnsRunningVM() async throws {
         let parallels = try getParallelsWithTestData()
-        let vm = try parallels.lookupVM(named: "running-vm-with-ip")
+        let vm = try await parallels.lookupVM(named: "running-vm-with-ip")
         XCTAssertNotNil(vm?.asRunningVM())
     }
 
-    func testThatLookupVMReturnsRunningIPV6VM() throws {
+    func testThatLookupVMReturnsRunningIPV6VM() async throws {
         let parallels = try getParallelsWithTestData()
-        let vm = try parallels.lookupVM(named: "running-vm-with-ipv6")
+        let vm = try await parallels.lookupVM(named: "running-vm-with-ipv6")
         XCTAssertNotNil(vm?.asRunningVM())
     }
 
-    func testThatLookupVMReturnsStoppedVM() throws {
+    func testThatLookupVMReturnsStoppedVM() async throws {
         let parallels = try getParallelsWithTestData()
-        let vm = try parallels.lookupVM(named: "stopped-vm")
+        let vm = try await parallels.lookupVM(named: "stopped-vm")
         XCTAssertNotNil(vm?.asStoppedVM())
     }
 
-    func testThatLookupVMReturnsSuspendedVM() throws {
+    func testThatLookupVMReturnsSuspendedVM() async throws {
         let parallels = try getParallelsWithTestData()
-        let vm = try parallels.lookupVM(named: "suspended-vm")
+        let vm = try await parallels.lookupVM(named: "suspended-vm")
         XCTAssertNotNil(vm?.asSuspendedVM())
     }
 
-    func testThatLicenseActivationWorks() throws {
+    func testThatLicenseActivationWorks() async throws {
         let runner = TestCommandRunner()
-        try Parallels(runner: runner).serviceControl.installLicense(key: "key", company: "company")
+        try await Parallels(runner: runner).serviceControl.installLicense(key: "key", company: "company")
         XCTAssertEqual(
             runner.command,
             "prlsrvctl install-license -k key --company company --activate-online-immediately"
         )
     }
 
-    func testThatRegisterVMWorks() throws {
+    func testThatRegisterVMWorks() async throws {
         let runner = TestCommandRunner()
-        try Parallels(runner: runner).registerVM(at: URL(fileURLWithPath: "/dev/null"))
+        try await Parallels(runner: runner).registerVM(at: URL(fileURLWithPath: "/dev/null"))
         XCTAssertEqual(runner.command, "prlctl register /dev/null --preserve-uuid=no")
     }
 
-    func testThatUnregisterVMWorks() throws {
+    func testThatUnregisterVMWorks() async throws {
         let runner = TestCommandRunner()
-        try Parallels(runner: runner).unregisterVM(handle: "foo")
+        try await Parallels(runner: runner).unregisterVM(named: "foo")
         XCTAssertEqual(runner.command, "prlctl unregister foo")
     }
 

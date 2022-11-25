@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.7
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -53,7 +53,7 @@ let package = Package(
                 .copy("resources/stopped-vm.json"),
                 .copy("resources/suspended-vm-details.json"),
                 .copy("resources/suspended-vm.json"),
-                .copy("resources/vm-snapshot-list-empty.json"),
+                .copy("resources/vm-list.json"),
                 .copy("resources/vm-snapshot-list.json")
             ]
         )
