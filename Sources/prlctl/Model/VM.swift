@@ -16,22 +16,6 @@ public protocol VMProtocol {
     var name: String { get }
 }
 
-extension VMProtocol {
-
-    /// Delete this VM
-    public func delete(runner: ParallelsCommandRunner = .default) throws {
-        // It's ok if trying to stop the VM fails – it might already be stopped
-        try? runner.stopVM(handle: uuid, fast: true)
-
-        try runner.deleteVM(handle: uuid)
-    }
-
-    /// Unregister this VM from Parallels without deleting any files on disk
-    public func unregister(runner: ParallelsCommandRunner = .default) throws {
-        try runner.unregisterVM(handle: uuid)
-    }
-}
-
 public struct CodableVM: VMProtocol, Codable {
     public let uuid: String
     public let name: String
@@ -174,6 +158,16 @@ extension VM: Equatable {
     }
 }
 
+public struct StoppedVM: VMProtocol {
+    public let uuid: String
+    public let name: String
+}
+
+public struct PackagedVM: VMProtocol {
+    public let uuid: String
+    public let name: String
+}
+
 public struct SuspendedVM: VMProtocol {
     public let uuid: String
     public let name: String
@@ -208,4 +202,6 @@ struct CodableVMSnapshot: Codable {
 public struct VMSnapshot {
     let uuid: String
     let name: String
+
+    let virtualMachineHandle: String
 }
